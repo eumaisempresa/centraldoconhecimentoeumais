@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central do Conhecimento EU⁺</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #060E18;
+            --bg-secondary: #0A1624;
+            --gold-primary: #C4974A;
+            --text-primary: #EEF0F2;
+            --text-secondary: #7A8FA3;
+        }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+        }
+        .font-title { font-family: 'Cormorant Garamond', serif; }
+        .gold-text { color: var(--gold-primary); }
+        .gold-border { border-color: rgba(196, 151, 74, 0.3); }
+        .card { background-color: var(--bg-secondary); border: 1px solid rgba(196, 151, 74, 0.1); }
+        .loader { border-top-color: var(--gold-primary); animation: spinner 1s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="p-4 border-b gold-border flex justify-between items-center bg-[#060E18] sticky top-0 z-50">
+        <div>
+            <h1 class="font-title text-2xl gold-text font-bold">EU⁺ Central</h1>
+            <p class="text-[10px] text-secondary uppercase tracking-widest">Conhecimento & Estrutura</p>
+        </div>
+        <button onclick="logout()" class="text-xs border gold-border px-3 py-1 rounded text-secondary">Sair</button>
+    </header>
+
+    <!-- Main Content -->
+    <main id="app" class="flex-grow p-4">
+        <!-- Login Screen -->
+        <div id="login-screen" class="max-w-md mx-auto mt-20 text-center">
+            <h2 class="font-title text-3xl gold-text mb-6">Acesso Restrito</h2>
+            <input type="password" id="senha" placeholder="Digite a senha mestre" class="w-full bg-[#0A1624] border gold-border p-3 rounded mb-4 text-center focus:outline-none">
+            <button onclick="iniciar()" class="w-full bg-[#C4974A] text-[#060E18] font-bold py-3 rounded hover:opacity-90 transition">Entrar na Central</button>
+        </div>
+
+        <!-- Explorer Screen (Hidden by default) -->
+        <div id="explorer-screen" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+                <div id="breadcrumb" class="text-sm text-secondary truncate flex-grow mr-2">
+                    Raiz / ...
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="novoItem('folder')" class="bg-blue-900/30 text-blue-400 p-2 rounded text-xs border border-blue-900/50">+ Pasta</button>
+                    <button onclick="novoItem('file')" class="bg-green-900/30 text-green-400 p-2 rounded text-xs border border-green-900/50">+ Doc</button>
+                </div>
+            </div>
+
+            <div id="file-list" class="grid gap-3">
+                <!-- Itens serão carregados aqui -->
+            </div>
+        </div>
+
+        <!-- Editor Screen (Hidden by default) -->
+        <div id="editor-screen" class="hidden fixed inset-0 bg-[#060E18] z-[60] flex flex-col p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="editor-title" class="font-title text-xl gold-text truncate">Editando...</h3>
+                <div class="flex gap-2">
+                    <button onclick="fecharEditor()" class="text-secondary px-3 py-1">Cancelar</button>
+                    <button onclick="salvarDoc()" class="bg-[#C4974A] text-[#060E18] px-4 py-1 rounded font-bold">Salvar</button>
+                </div>
+            </div>
+            <textarea id="editor-content" class="flex-grow bg-[#0A1624] border gold-border p-4 rounded text-sm focus:outline-none resize-none"></textarea>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="hidden fixed inset-0 bg-black/70 z-[100] flex items-center justify-center">
+        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+    </div>
+
+    <script>
+        const API_URL = "COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT";
+        let currentFolderId = "";
+        let currentFileId = "";
+        let historyStack = [];
+
+        async function callAPI(data) {
+            document.getElementById('loading').classList.remove('hidden');
+            const senha = document.getElementById('senha').value;
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ ...data, senha })
+                });
+                const result = await response.json();
+                if (!result.success) throw new Error(result.error);
+                return result.data;
+            } catch (err) {
+                alert("Erro: " + err.message);
+                if(err.message === "Senha incorreta") logout();
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        async function iniciar() {
+            const data = await callAPI({ action: 'listarConteudo' });
+            if (data) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('explorer-screen').classList.remove('hidden');
+                renderExplorer(data);
+            }
+        }
+
+        function renderExplorer(data) {
+            currentFolderId = data.current.id;
+            const list = document.getElementById('file-list');
+            const breadcrumb = document.getElementById('breadcrumb');
+            list.innerHTML = "";
+            breadcrumb.innerText = "Central / " + data.current.name;
+
+            // Botão Voltar
+            if (historyStack.length > 0) {
+                const backBtn = document.createElement('div');
+                backBtn.className = "card p-4 rounded flex items-center gap-3 cursor-pointer opacity-70";
+                backBtn.innerHTML = `<span>⬅️</span> <span>Voltar</span>`;
+                backBtn.onclick = () => {
+                    historyStack.pop();
+                    const prev = historyStack.pop() || "";
+                    carregarPasta(prev);
+                };
+                list.appendChild(backBtn);
+            }
+
+            // Pastas
+            data.folders.forEach(f => {
+                const div = document.createElement('div');
+                div.className = "card p-4 rounded flex items-center justify-between cursor-pointer hover:bg-[#0E1E30]";
+                div.innerHTML = `<div class="flex items-center gap-3"><span>📁</span> <span>${f.name}</span></div> <span>❯</span>`;
+                div.onclick = () => carregarPasta(f.id);
+                list.appendChild(div);
+            });
+
+            // Arquivos
+            data.files.forEach(f => {
+                const div = document.createElement('div');
+                div.className = "card p-4 rounded flex items-center justify-between cursor-pointer hover:bg-[#0E1E30]";
+                div.innerHTML = `<div class="flex items-center gap-3"><span>📄</span> <span>${f.name}</span></div> <span class="text-[10px] text-secondary">EDITAR</span>`;
+                div.onclick = () => abrirDoc(f.id, f.name);
+                list.appendChild(div);
+            });
+        }
+
+        async function carregarPasta(id) {
+            if(id) historyStack.push(id);
+            const data = await callAPI({ action: 'listarConteudo', folderId: id });
+            if (data) renderExplorer(data);
+        }
+
+        async function abrirDoc(id, name) {
+            currentFileId = id;
+            document.getElementById('editor-title').innerText = name;
+            const content = await callAPI({ action: 'lerDocumento', fileId: id });
+            document.getElementById('editor-content').value = content;
+            document.getElementById('editor-screen').classList.remove('hidden');
+        }
+
+        async function salvarDoc() {
+            const content = document.getElementById('editor-content').value;
+            const success = await callAPI({ action: 'salvarDocumento', fileId: currentFileId, content });
+            if (success) {
+                alert("Salvo com sucesso!");
+                fecharEditor();
+            }
+        }
+
+        async function novoItem(type) {
+            const name = prompt("Digite o nome do novo " + (type === 'folder' ? 'pasta' : 'documento') + ":");
+            if (!name) return;
+            const id = await callAPI({ action: 'criarItem', name, parentId: currentFolderId, type });
+            if (id) carregarPasta(currentFolderId);
+        }
+
+        function fecharEditor() {
+            document.getElementById('editor-screen').classList.add('hidden');
+        }
+
+        function logout() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
