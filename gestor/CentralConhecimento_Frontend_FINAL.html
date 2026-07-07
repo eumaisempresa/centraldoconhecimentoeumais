@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central do Conhecimento EU⁺</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: #060E18;
+            --color-accent: #C4974A;
+            --color-success: #7AAD66;
+            --color-bg: #f5f5f5;
+            --color-text: #333;
+            --color-border: #ddd;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--color-primary) 0%, #1a2a3a 100%);
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            color: var(--color-accent);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .login-box p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--color-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--color-accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #b8873d;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .header {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--color-accent);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-logout {
+            background-color: #d32f2f;
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background-color: #b71c1c;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            border-right: 1px solid var(--color-border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .folder-list {
+            list-style: none;
+        }
+
+        .folder-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .folder-item:hover {
+            background-color: #f0f0f0;
+            border-left-color: var(--color-accent);
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .file-item {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--color-primary);
+            word-break: break-word;
+            font-size: 0.9rem;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .file-actions button {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            color: var(--color-primary);
+            transition: all 0.3s;
+        }
+
+        .file-actions button:hover {
+            background-color: var(--color-accent);
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--color-accent);
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--color-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        table th {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--color-accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--color-success);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast.active {
+            display: block;
+        }
+
+        .toast.error {
+            background-color: #d32f2f;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
+                max-height: 150px;
+                overflow-x: auto;
+                display: flex;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .folder-list {
+                display: flex;
+                gap: 10px;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+
+            .folder-item {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            .file-list {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .btn-small {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
+            <h1>EU⁺</h1>
+            <p>CENTRAL DO CONHECIMENTO</p>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="password">Senha de Acesso</label>
+                    <input type="password" id="password" placeholder="Digite sua senha" required autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary">Acessar Central</button>
+                <div class="error-message" id="loginError"></div>
+            </form>
+            
+            <p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #999;">
+                Grupo EU⁺ Missão
+            </p>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION -->
+    <div id="mainApp" style="display: none;">
+        <div class="header">
+            <h1>📚 Central do Conhecimento EU⁺</h1>
+            <div class="header-actions">
+                <button class="btn-small btn-primary" onclick="refreshContent()">🔄 Atualizar</button>
+                <button class="btn-small btn-logout" onclick="logout()">🚪 Sair</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <ul class="folder-list" id="folderList"></ul>
+            </div>
+
+            <div class="content">
+                <div class="toolbar">
+                    <button class="btn-small btn-primary" onclick="showCreateModal('folder')">➕ Nova Pasta</button>
+                    <button class="btn-small btn-primary" onclick="showCreateModal('file')">📝 Novo Arquivo</button>
+                    <button class="btn-small btn-primary" onclick="showCreateModal('google_sheets')">📊 Nova Planilha</button>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando...</p>
+                </div>
+
+                <div class="file-list" id="fileList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Visualizar</h2>
+                <button class="close-btn" onclick="closeModal('viewModal')">✕</button>
+            </div>
+            <div id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-small btn-primary" onclick="closeModal('viewModal')">Fechar</button>
+                <button class="btn-small btn-primary" id="saveBtn" onclick="saveDocument()" style="display: none;">💾 Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="createTitle">Criar Novo</h2>
+                <button class="close-btn" onclick="closeModal('createModal')">✕</button>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label for="itemName">Nome</label>
+                    <input type="text" id="itemName" placeholder="Digite o nome">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-small" onclick="closeModal('createModal')" style="background-color: #f0f0f0; color: #333;">Cancelar</button>
+                <button class="btn-small btn-primary" onclick="createItem()">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ===== CONFIGURAÇÃO =====
+        const API_URL = "COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT";
+        let currentPassword = null;
+        let currentFolderId = null;
+        let currentFileId = null;
+
+        // ===== LOGIN =====
+        function handleLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+            
+            if (!password) {
+                showError('Digite a senha');
+                return;
+            }
+
+            currentPassword = password;
+            testConnection(password);
+        }
+
+        function testConnection(password) {
+            showLoading(true);
+            
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senha: password,
+                    action: 'listarConteudo',
+                    folderId: null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                    currentFolderId = null;
+                    loadContent();
+                } else {
+                    showError(data.error || 'Falha na autenticação');
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showError('Erro de conexão: ' + error.message);
+            });
+        }
+
+        function logout() {
+            currentPassword = null;
+            currentFolderId = null;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('password').value = '';
+        }
+
+        // ===== CONTEÚDO =====
+        function loadContent() {
+            if (!currentPassword) {
+                logout();
+                return;
+            }
+
+            showLoading(true);
+            
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senha: currentPassword,
+                    action: 'listarConteudo',
+                    folderId: currentFolderId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    renderContent(data.data);
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showError('Erro: ' + error.message);
+            });
+        }
+
+        function renderContent(data) {
+            const folderList = document.getElementById('folderList');
+            folderList.innerHTML = '';
+            
+            data.folders.forEach(folder => {
+                const li = document.createElement('li');
+                li.className = 'folder-item';
+                li.textContent = '📁 ' + folder.name;
+                li.onclick = () => {
+                    currentFolderId = folder.id;
+                    loadContent();
+                };
+                folderList.appendChild(li);
+            });
+
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            data.files.forEach(file => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `
+                    <div class="file-icon">${file.icon || '📎'}</div>
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-actions">
+                        <button onclick="openFile('${file.id}')">👁️ Ver</button>
+                        <button onclick="deleteFile('${file.id}')">🗑️ Del</button>
+                    </div>
+                `;
+                fileList.appendChild(div);
+            });
+        }
+
+        function openFile(fileId) {
+            currentFileId = fileId;
+            showLoading(true);
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senha: currentPassword,
+                    action: 'lerDocumento',
+                    fileId: fileId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    displayFile(data.data);
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showError('Erro: ' + error.message);
+            });
+        }
+
+        function displayFile(file) {
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            const saveBtn = document.getElementById('saveBtn');
+            
+            modalTitle.textContent = file.name;
+            saveBtn.style.display = 'none';
+
+            if (file.type === 'google_sheets') {
+                let html = '<div style="overflow-x: auto;">';
+                file.content.forEach(sheet => {
+                    html += `<h3>${sheet.name}</h3>`;
+                    html += '<table>';
+                    sheet.data.forEach(row => {
+                        html += '<tr>';
+                        row.forEach(cell => {
+                            html += `<td>${cell || ''}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</table>';
+                });
+                html += '</div>';
+                modalBody.innerHTML = html;
+            } else if (file.type === 'text' || file.type === 'google_doc') {
+                modalBody.innerHTML = `<textarea id="fileContent">${file.content}</textarea>`;
+                saveBtn.style.display = 'block';
+            } else {
+                modalBody.innerHTML = `<p>${file.content}</p>`;
+            }
+
+            openModal('viewModal');
+        }
+
+        function saveDocument() {
+            if (!currentFileId) return;
+
+            const content = document.getElementById('fileContent').value;
+            showLoading(true);
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senha: currentPassword,
+                    action: 'salvarDocumento',
+                    fileId: currentFileId,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    showToast('Documento salvo!');
+                    closeModal('viewModal');
+                    loadContent();
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showError('Erro: ' + error.message);
+            });
+        }
+
+        function deleteFile(fileId) {
+            if (!confirm('Deletar este arquivo?')) return;
+
+            showLoading(true);
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senha: currentPassword,
+                    action: 'deletarItem',
+                    fileId: fileId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    showToast('Arquivo deletado!');
+                    loadContent();
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showError('Erro: ' + error.message);
+            });
+        }
+
+        // ===== CRIAR ITEM =====
+        let createType = null;
+
+        function showCreateModal(type) {
+            createType = type;
+            const title = {
+                'folder': 'Nova Pasta',
+                'file': 'Novo Arquivo',
+                'google_sheets': 'Nova Planilha'
+            }[type];
+            
+            document.getElementById('createTitle').textContent = title;
+            document.getElementById('itemName').value = '';
+            openModal('createModal');
+        }
+
+        function createItem() {
+            const name = document.getElementById('itemName').value;
+            if (!name) {
+                showError('Digite um nome');
+                return;
+            }
+
+            showLoading(true);
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senha: currentPassword,
+                    action: 'criarItem',
+                    name: name,
+                    parentId: currentFolderId,
+                    type: createType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    showToast('Item criado!');
+                    closeModal('createModal');
+                    loadContent();
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showError('Erro: ' + error.message);
+            });
+        }
+
+        // ===== UTILITÁRIOS =====
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('loginError');
+            if (errorEl && errorEl.style.display !== 'none') {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            }
+            showToast(message, true);
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.toggle('error', isError);
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 3000);
+        }
+
+        function refreshContent() {
+            loadContent();
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
