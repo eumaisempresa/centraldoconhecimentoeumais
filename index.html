@@ -343,6 +343,58 @@
     main{ max-width: 900px; margin: 0 auto; }
     header.topo{ padding-left: calc(50% - 450px); padding-right: calc(50% - 450px); }
     .linha-topo{ padding-top:2px; }
+    .chat-input-bar{ max-width: 900px; margin: 0 auto; }
+  }
+
+  /* ---------- ASSISTENTE DE IA ---------- */
+  body[data-aba="ia"] .busca-wrap{ display:none; }
+  body[data-aba="ia"] .barra-info{ display:none; }
+  #painel-ia{ display:none; }
+  body[data-aba="ia"] #painel-ia{ display:block; }
+
+  .chat-mensagens{
+    display:flex; flex-direction:column; gap:10px;
+    padding-bottom: 76px;
+  }
+  .bolha{
+    max-width: 85%;
+    padding: 10px 13px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .bolha.usuario{
+    align-self:flex-end;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-bottom-right-radius: 2px;
+  }
+  .bolha.ia{
+    align-self:flex-start;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 2px;
+  }
+  .bolha.ia.carregando{ color: var(--muted); font-style: italic; }
+
+  .chat-input-bar{
+    position: fixed; left:0; right:0; bottom:0;
+    display:none; gap:8px;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    z-index: 30;
+  }
+  body[data-aba="ia"] .chat-input-bar{ display:flex; }
+  .chat-input-bar input{ flex:1; }
+  .btn-enviar-chat{
+    width:44px; height:44px;
+    border-radius:8px; border:none;
+    background: var(--accent); color: var(--accent-ink);
+    font-size:18px; cursor:pointer;
+    flex-shrink:0;
   }
 </style>
 </head>
@@ -392,8 +444,9 @@
     </div>
     <nav class="abas">
       <button class="ativa" data-modulo="pastas">Pastas</button>
-      <button data-modulo="pp">Produtos &amp; Projetos</button>
+      <button data-modulo="pp">Produtos/Projetos</button>
       <button data-modulo="doc">Documentos</button>
+      <button data-modulo="ia">🤖 IA</button>
     </nav>
   </header>
 
@@ -403,7 +456,15 @@
       <span class="refazer" id="btn-reprocessar">↻ reprocessar</span>
     </div>
     <div id="conteudo"></div>
+    <div id="painel-ia">
+      <div class="chat-mensagens" id="chat-mensagens"></div>
+    </div>
   </main>
+
+  <div class="chat-input-bar" id="chat-input-bar">
+    <input type="text" id="campo-chat-ia" placeholder="Pergunte sobre pastas, produtos ou documentos..." />
+    <button class="btn-enviar-chat" id="btn-enviar-ia">➤</button>
+  </div>
 </div>
 
 <!-- ===================== MODAL: REPROCESSAR ===================== -->
@@ -437,6 +498,11 @@
   let abaAtual = 'pastas';
   let poller = null;
 
+  // estado do chat com a IA
+  let historicoChatIA = [];
+  let chatIniciado = false;
+  let contadorBolha = 0;
+
   // ---------- elementos ----------
   const telaLogin = document.getElementById('tela-login');
   const telaApp = document.getElementById('tela-app');
@@ -453,6 +519,9 @@
   const modalReprocessar = document.getElementById('modal-reprocessar');
   const fecharModalReprocessar = document.getElementById('fechar-modal-reprocessar');
   const statusReprocessar = document.getElementById('status-reprocessar');
+  const chatMensagensEl = document.getElementById('chat-mensagens');
+  const campoChatIA = document.getElementById('campo-chat-ia');
+  const btnEnviarIA = document.getElementById('btn-enviar-ia');
 
   // ---------- helpers ----------
   function normalizar(txt){
@@ -548,9 +617,20 @@
   // ---------- carregamento de abas ----------
   async function carregarAba(modulo, forcar){
     abaAtual = modulo;
+    document.body.dataset.aba = modulo;
     document.querySelectorAll('nav.abas button').forEach(b=>{
       b.classList.toggle('ativa', b.dataset.modulo === modulo);
     });
+
+    if (modulo === 'ia'){
+      if (!chatIniciado){
+        adicionarBolha('ia', 'Oi! Sou o assistente da Central do Conhecimento EU+. Pergunte sobre pastas, produtos, projetos ou documentos mapeados — por exemplo: "onde estão os arquivos do produto X?"');
+        chatIniciado = true;
+      }
+      setTimeout(() => campoChatIA.focus(), 200);
+      return;
+    }
+
     campoBusca.value = '';
 
     const chaveCache = modulo === 'pastas' ? 'pastas' : (modulo === 'pp' ? 'pp' : 'doc');
@@ -673,6 +753,49 @@
     return d.innerHTML;
   }
 
+  // ---------- assistente de IA ----------
+  function adicionarBolha(papel, texto, carregando){
+    contadorBolha++;
+    const id = 'bolha-' + contadorBolha;
+    const div = document.createElement('div');
+    div.className = 'bolha ' + papel + (carregando ? ' carregando' : '');
+    div.id = id;
+    div.textContent = texto;
+    chatMensagensEl.appendChild(div);
+    chatMensagensEl.scrollTop = chatMensagensEl.scrollHeight;
+    return id;
+  }
+
+  function removerBolha(id){
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  async function enviarMensagemIA(){
+    const texto = campoChatIA.value.trim();
+    if (!texto) return;
+
+    adicionarBolha('usuario', texto);
+    historicoChatIA.push({ papel: 'usuario', texto });
+    campoChatIA.value = '';
+
+    const idCarregando = adicionarBolha('ia', 'digitando...', true);
+    try{
+      const r = await chamarApi('perguntarIA', { pergunta: texto, historico: historicoChatIA.slice(-10) });
+      removerBolha(idCarregando);
+      if (r.ok){
+        adicionarBolha('ia', r.resposta);
+        historicoChatIA.push({ papel: 'ia', texto: r.resposta });
+      } else {
+        if (r.erro && r.erro.indexOf('Sessão') !== -1){ sair(); return; }
+        adicionarBolha('ia', 'Erro: ' + r.erro);
+      }
+    } catch(e){
+      removerBolha(idCarregando);
+      adicionarBolha('ia', 'Erro de conexão: ' + e.message);
+    }
+  }
+
   // ---------- reprocessar ----------
   function abrirModalReprocessar(){
     modalReprocessar.classList.add('mostrar');
@@ -729,6 +852,9 @@
   });
 
   campoBusca.addEventListener('input', () => renderizarAba(abaAtual));
+
+  btnEnviarIA.addEventListener('click', enviarMensagemIA);
+  campoChatIA.addEventListener('keydown', e => { if (e.key === 'Enter') enviarMensagemIA(); });
 
   btnReprocessar.addEventListener('click', abrirModalReprocessar);
   fecharModalReprocessar.addEventListener('click', fecharModal);
