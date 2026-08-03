@@ -1,819 +1,747 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Meu Drive</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Central do Conhecimento EU+ · Painel do Drive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg: #15181D;
+    --surface: #1D222A;
+    --surface-2: #262C36;
+    --line: #333B47;
+    --ink: #ECE8DF;
+    --muted: #8B92A0;
+    --accent: #E3A94D;      /* amber ficha manila */
+    --accent-ink: #2A1E0A;
+    --sage: #6E9C87;        /* produtos/projetos */
+    --blue: #6E8FB8;        /* documentos */
+    --danger: #D9614F;
+    --radius: 10px;
+    --font-display: 'IBM Plex Serif', serif;
+    --font-body: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  button, input{ font-family: inherit; }
+  ::selection{ background: var(--accent); color: var(--accent-ink); }
+  a{ color: inherit; }
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f5f5;
-            color: #333;
-            overflow: hidden;
-        }
+  /* ---------- LOGIN ---------- */
+  #tela-login{
+    min-height: 100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  .cartao-login{
+    width:100%;
+    max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 24px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cartao-login::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:6px;
+    background: linear-gradient(90deg, var(--accent), var(--sage), var(--blue));
+  }
+  .selo{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .cartao-login h1{
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    line-height: 1.25;
+  }
+  .cartao-login p.sub{
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 22px;
+  }
+  label{
+    display:block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: .02em;
+  }
+  input[type="password"], input[type="text"], input[type="search"]{
+    width:100%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 15px;
+    outline: none;
+  }
+  input:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px rgba(227,169,77,.18); }
+  .campo{ margin-bottom: 16px; }
+  details.avancado{ margin: 4px 0 20px; }
+  details.avancado summary{
+    cursor:pointer;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    list-style: none;
+  }
+  details.avancado summary::-webkit-details-marker{ display:none; }
+  details.avancado[open] summary{ color: var(--accent); }
+  details.avancado .campo{ margin-top: 12px; }
+  .btn{
+    appearance:none;
+    border:none;
+    border-radius: 8px;
+    padding: 13px 18px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor:pointer;
+    width:100%;
+  }
+  .btn-primario{ background: var(--accent); color: var(--accent-ink); }
+  .btn-primario:active{ transform: translateY(1px); }
+  .msg-erro{
+    background: rgba(217,97,79,.12);
+    border: 1px solid rgba(217,97,79,.4);
+    color: #F1A79C;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display:none;
+  }
+  .msg-erro.mostrar{ display:block; }
 
-        .tela-login {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
-            padding: 20px;
-        }
+  /* ---------- APP ---------- */
+  #tela-app{ display:none; min-height: 100vh; }
+  header.topo{
+    position: sticky; top:0; z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 16px 0;
+  }
+  .linha-topo{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 12px;
+  }
+  .marca{ display:flex; flex-direction:column; }
+  .marca .selo{ margin-bottom: 2px; }
+  .marca h2{ font-family: var(--font-display); font-size: 17px; margin:0; font-weight:600; }
+  .acoes-topo{ display:flex; gap:8px; }
+  .icone-btn{
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--surface);
+    border:1px solid var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor:pointer;
+    font-size: 16px;
+  }
+  .icone-btn:active{ background: var(--surface-2); }
+  .busca-wrap{ margin-bottom: 12px; }
+  .busca-wrap input{ font-family: var(--font-mono); font-size: 14px; }
 
-        .caixa-login {
-            background: white;
-            border-radius: 12px;
-            padding: 30px 20px;
-            width: 100%;
-            max-width: 300px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
+  /* abas em formato de ficha/pasta */
+  nav.abas{
+    display:flex;
+    gap: 4px;
+    padding: 0 2px;
+  }
+  nav.abas button{
+    flex:1;
+    appearance:none; border:none; cursor:pointer;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12.5px;
+    padding: 10px 6px 9px;
+    clip-path: polygon(8% 0, 92% 0, 100% 100%, 0% 100%);
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    transition: transform .15s ease, background .15s ease, color .15s ease;
+    position: relative;
+    top: 4px;
+  }
+  nav.abas button.ativa{
+    background: var(--surface-2);
+    color: var(--ink);
+    top: 0;
+    transform: translateY(0);
+    z-index: 2;
+  }
+  nav.abas button[data-modulo="pastas"].ativa{ box-shadow: inset 0 3px 0 var(--accent); }
+  nav.abas button[data-modulo="pp"].ativa{ box-shadow: inset 0 3px 0 var(--sage); }
+  nav.abas button[data-modulo="doc"].ativa{ box-shadow: inset 0 3px 0 var(--blue); }
 
-        .caixa-login h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #1a73e8;
-            text-align: center;
-        }
+  main{ padding: 16px; padding-bottom: 90px; }
 
-        .caixa-login p {
-            font-size: 14px;
-            color: #999;
-            text-align: center;
-            margin-bottom: 30px;
-        }
+  .barra-info{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 12px;
+    font-family: var(--font-mono);
+  }
+  .barra-info .refazer{
+    color: var(--accent);
+    cursor:pointer;
+    font-weight: 600;
+  }
 
-        .form-grupo {
-            margin-bottom: 20px;
-        }
+  /* cartão de índice (item da lista) */
+  .cartao{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display:block;
+    text-decoration:none;
+    color: inherit;
+  }
+  .cartao.cor-pastas{ border-left-color: var(--accent); }
+  .cartao.cor-produto{ border-left-color: var(--sage); }
+  .cartao.cor-projeto{ border-left-color: #8B7FC4; }
+  .cartao.cor-doc{ border-left-color: var(--blue); }
 
-        .form-grupo label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #333;
-        }
+  .cartao .titulo{
+    font-weight: 600;
+    font-size: 14.5px;
+    margin-bottom: 3px;
+  }
+  .cartao .caminho{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    word-break: break-word;
+    margin-bottom: 6px;
+  }
+  .cartao .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    padding: 2px 7px;
+    border-radius: 100px;
+    background: var(--surface-2);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
 
-        .form-grupo input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: inherit;
-        }
+  details.grupo{ margin-bottom: 14px; }
+  details.grupo > summary{
+    cursor:pointer;
+    list-style:none;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+    margin-bottom: 10px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+  }
+  details.grupo > summary::-webkit-details-marker{ display:none; }
+  details.grupo > summary .contagem{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+  }
 
-        .form-grupo input:focus {
-            outline: none;
-            border-color: #1a73e8;
-            background: #f0f7ff;
-        }
+  .vazio{
+    text-align:center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 40px 10px;
+    font-family: var(--font-mono);
+  }
+  .carregando{
+    text-align:center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 30px 10px;
+  }
 
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
+  /* modal simples (reprocessar / config) */
+  .modal-fundo{
+    display:none;
+    position: fixed; inset:0;
+    background: rgba(10,12,15,.7);
+    z-index: 50;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .modal-fundo.mostrar{ display:flex; }
+  .modal{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius) var(--radius) 0 0;
+    width:100%;
+    max-width: 480px;
+    padding: 20px;
+    padding-bottom: 28px;
+  }
+  .modal h3{ font-family: var(--font-display); margin:0 0 14px; font-size:17px; }
+  .opcao-modulo{
+    width:100%;
+    text-align:left;
+    background: var(--surface-2);
+    border:1px solid var(--line);
+    color: var(--ink);
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor:pointer;
+    font-size: 14px;
+  }
+  .status-linha{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+    min-height: 16px;
+  }
+  .fechar-modal{
+    display:block;
+    text-align:center;
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 13px;
+    cursor:pointer;
+  }
 
-        .btn-primary {
-            background: #1a73e8;
-            color: white;
-        }
-
-        .btn-primary:active {
-            background: #0d47a1;
-            transform: scale(0.98);
-        }
-
-        .erro {
-            color: #d32f2f;
-            font-size: 13px;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .app-principal {
-            display: none;
-            width: 100%;
-            height: 100%;
-            flex-direction: column;
-            background: #f5f5f5;
-        }
-
-        .cabecalho {
-            background: #1a73e8;
-            color: white;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            flex-shrink: 0;
-            safe-area-inset-top: env(safe-area-inset-top);
-            padding-top: max(12px, env(safe-area-inset-top));
-        }
-
-        .cabecalho h1 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .cabecalho-acoes {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-pequeno {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            font-size: 12px;
-            cursor: pointer;
-            font-family: inherit;
-            font-weight: 500;
-        }
-
-        .btn-pequeno:active {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .conteudo {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 12px;
-        }
-
-        .barra-ferramentas {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .lista-pastas {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 8px;
-        }
-
-        .pasta-item {
-            padding: 8px 12px;
-            background: white;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            white-space: nowrap;
-            font-size: 13px;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-
-        .pasta-item:active {
-            background: #e8f0fe;
-            border-color: #1a73e8;
-        }
-
-        .lista-arquivos {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 8px;
-        }
-
-        .arquivo-item {
-            background: white;
-            border-radius: 8px;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #eee;
-        }
-
-        .arquivo-item:active {
-            background: #f0f7ff;
-            border-color: #1a73e8;
-            transform: scale(0.95);
-        }
-
-        .arquivo-icone {
-            font-size: 28px;
-            margin-bottom: 4px;
-        }
-
-        .arquivo-nome {
-            font-size: 11px;
-            color: #333;
-            word-break: break-word;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .arquivo-acoes {
-            display: flex;
-            gap: 4px;
-            margin-top: 6px;
-            justify-content: center;
-        }
-
-        .arquivo-acoes button {
-            padding: 4px 6px;
-            font-size: 10px;
-            border: none;
-            border-radius: 3px;
-            background: #f0f0f0;
-            color: #333;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .arquivo-acoes button:active {
-            background: #e0e0e0;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: flex-end;
-            justify-content: center;
-            padding: 0;
-        }
-
-        .modal.ativo {
-            display: flex;
-        }
-
-        .modal-conteudo {
-            background: white;
-            border-radius: 12px 12px 0 0;
-            padding: 16px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            animation: slideUp 0.3s ease-out;
-            safe-area-inset-bottom: env(safe-area-inset-bottom);
-            padding-bottom: max(16px, env(safe-area-inset-bottom));
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-            }
-            to {
-                transform: translateY(0);
-            }
-        }
-
-        .modal-cabecalho {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 12px;
-        }
-
-        .modal-cabecalho h2 {
-            font-size: 16px;
-            color: #333;
-        }
-
-        .btn-fechar {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 13px;
-            resize: vertical;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin-bottom: 16px;
-        }
-
-        table th {
-            background: #f5f5f5;
-            padding: 8px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 1px solid #ddd;
-        }
-
-        table td {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .modal-rodape {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
-        }
-
-        .modal-rodape button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-        }
-
-        .btn-cancelar {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .btn-salvar {
-            background: #1a73e8;
-            color: white;
-        }
-
-        .btn-salvar:active {
-            background: #0d47a1;
-        }
-
-        .carregando {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .carregando.ativo {
-            display: block;
-        }
-
-        .spinner {
-            border: 3px solid #f0f0f0;
-            border-top: 3px solid #1a73e8;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .notificacao {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #1a73e8;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 6px;
-            font-size: 13px;
-            display: none;
-            z-index: 2000;
-            animation: slideIn 0.3s ease-out;
-            safe-area-inset-bottom: env(safe-area-inset-bottom);
-            bottom: max(20px, calc(20px + env(safe-area-inset-bottom)));
-        }
-
-        .notificacao.ativo {
-            display: block;
-        }
-
-        .notificacao.erro {
-            background: #d32f2f;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .lista-arquivos {
-                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-            }
-
-            .arquivo-icone {
-                font-size: 24px;
-            }
-
-            .arquivo-nome {
-                font-size: 10px;
-            }
-        }
-    </style>
+  @media (min-width: 720px){
+    main{ max-width: 900px; margin: 0 auto; }
+    header.topo{ padding-left: calc(50% - 450px); padding-right: calc(50% - 450px); }
+    .linha-topo{ padding-top:2px; }
+  }
+</style>
 </head>
 <body>
-    <!-- TELA LOGIN -->
-    <div id="telaLogin" class="tela-login">
-        <div class="caixa-login">
-            <h1>📁 Meu Drive</h1>
-            <p>Gerenciador Mobile</p>
-            
-            <form id="formLogin" onsubmit="fazerLogin(event)">
-                <div class="form-grupo">
-                    <label for="senha">Senha</label>
-                    <input type="password" id="senha" placeholder="Digite sua senha" required autocomplete="off">
-                </div>
-                <button type="submit" class="btn btn-primary">Acessar</button>
-                <div class="erro" id="erroLogin"></div>
-            </form>
-        </div>
+
+<!-- ===================== TELA DE LOGIN ===================== -->
+<div id="tela-login">
+  <div class="cartao-login">
+    <div class="selo">Central do Conhecimento EU+</div>
+    <h1>Painel de acesso ao Drive</h1>
+    <p class="sub">Digite a senha para abrir o mapeamento de pastas, produtos, projetos e documentos.</p>
+
+    <div class="msg-erro" id="erro-login"></div>
+
+    <div class="campo">
+      <label for="campo-senha">Senha de acesso</label>
+      <input type="password" id="campo-senha" placeholder="••••••••" autocomplete="current-password" />
     </div>
 
-    <!-- APP PRINCIPAL -->
-    <div id="appPrincipal" class="app-principal">
-        <div class="cabecalho">
-            <h1>📁 Meu Drive</h1>
-            <div class="cabecalho-acoes">
-                <button class="btn-pequeno" onclick="recarregar()">🔄</button>
-                <button class="btn-pequeno" onclick="sair()">🚪</button>
-            </div>
-        </div>
+    <details class="avancado" id="detalhes-conexao">
+      <summary>⚙ configurar conexão</summary>
+      <div class="campo">
+        <label for="campo-url">URL do App da Web (Apps Script)</label>
+        <input type="text" id="campo-url" placeholder="https://script.google.com/macros/s/.../exec" />
+      </div>
+    </details>
 
-        <div class="conteudo">
-            <div class="barra-ferramentas">
-                <button class="btn btn-primary" onclick="mostrarCriar('pasta')" style="flex: 1;">➕ Pasta</button>
-                <button class="btn btn-primary" onclick="mostrarCriar('texto')" style="flex: 1;">📝 Arquivo</button>
-            </div>
+    <button class="btn btn-primario" id="btn-entrar">Entrar</button>
+  </div>
+</div>
 
-            <div class="carregando" id="carregando">
-                <div class="spinner"></div>
-                <p>Carregando...</p>
-            </div>
-
-            <div id="listaPastas" class="lista-pastas"></div>
-            <div id="listaArquivos" class="lista-arquivos"></div>
-        </div>
+<!-- ===================== APP ===================== -->
+<div id="tela-app">
+  <header class="topo">
+    <div class="linha-topo">
+      <div class="marca">
+        <div class="selo">Central do Conhecimento EU+</div>
+        <h2>Painel do Drive</h2>
+      </div>
+      <div class="acoes-topo">
+        <div class="icone-btn" id="btn-config" title="Configurar conexão">⚙</div>
+        <div class="icone-btn" id="btn-sair" title="Sair">⏻</div>
+      </div>
     </div>
-
-    <!-- MODAL VER ARQUIVO -->
-    <div id="modalVer" class="modal">
-        <div class="modal-conteudo">
-            <div class="modal-cabecalho">
-                <h2 id="modalTitulo">Arquivo</h2>
-                <button class="btn-fechar" onclick="fecharModal('modalVer')">✕</button>
-            </div>
-            <div id="modalCorpo"></div>
-            <div class="modal-rodape">
-                <button class="btn-cancelar" onclick="fecharModal('modalVer')">Fechar</button>
-                <button class="btn-salvar" id="btnSalvar" onclick="salvarArquivo()" style="display: none;">Salvar</button>
-            </div>
-        </div>
+    <div class="busca-wrap">
+      <input type="search" id="campo-busca" placeholder="buscar://" />
     </div>
+    <nav class="abas">
+      <button class="ativa" data-modulo="pastas">Pastas</button>
+      <button data-modulo="pp">Produtos &amp; Projetos</button>
+      <button data-modulo="doc">Documentos</button>
+    </nav>
+  </header>
 
-    <!-- MODAL CRIAR -->
-    <div id="modalCriar" class="modal">
-        <div class="modal-conteudo">
-            <div class="modal-cabecalho">
-                <h2 id="modalCriarTitulo">Criar</h2>
-                <button class="btn-fechar" onclick="fecharModal('modalCriar')">✕</button>
-            </div>
-            <div class="form-grupo">
-                <label for="nomeCriar">Nome</label>
-                <input type="text" id="nomeCriar" placeholder="Digite o nome">
-            </div>
-            <div class="modal-rodape">
-                <button class="btn-cancelar" onclick="fecharModal('modalCriar')">Cancelar</button>
-                <button class="btn-salvar" onclick="criarItem()">Criar</button>
-            </div>
-        </div>
+  <main>
+    <div class="barra-info">
+      <span id="info-contagem">—</span>
+      <span class="refazer" id="btn-reprocessar">↻ reprocessar</span>
     </div>
+    <div id="conteudo"></div>
+  </main>
+</div>
 
-    <div id="notificacao" class="notificacao"></div>
+<!-- ===================== MODAL: REPROCESSAR ===================== -->
+<div class="modal-fundo" id="modal-reprocessar">
+  <div class="modal">
+    <h3>Reprocessar mapeamento</h3>
+    <button class="opcao-modulo" data-modulo="pastas">📁 Todas as pastas do Drive</button>
+    <button class="opcao-modulo" data-modulo="projetosProdutos">🧩 Produtos e Projetos</button>
+    <button class="opcao-modulo" data-modulo="documental">📄 Mapeamento Documental</button>
+    <div class="status-linha" id="status-reprocessar"></div>
+    <div class="fechar-modal" id="fechar-modal-reprocessar">fechar</div>
+  </div>
+</div>
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzfgMC3If12a7KbqC7-Hi9egYi5hlYyaPYBCKapUhUDGKnPbJ-5e4-ouw5yd5Oq2vRBVQ/exec";
-        let senhaAtual = null;
-        let pastaAtual = null;
-        let tipoAtualCriar = null;
-        let arquivoAtualId = null;
+<script>
+(function(){
+  "use strict";
 
-        // ===== LOGIN =====
-        function fazerLogin(e) {
-            e.preventDefault();
-            const senha = document.getElementById('senha').value;
-            
-            if (!senha) {
-                mostrarErro('Digite a senha');
-                return;
-            }
+  // ---------- estado / storage ----------
+  const LS_URL = 'eudrive_url';
+  const LS_TOKEN = 'eudrive_token';
+  const LS_TOKEN_EXP = 'eudrive_token_exp';
 
-            senhaAtual = senha;
-            testarConexao();
+  let estado = {
+    url: localStorage.getItem(LS_URL) || '',
+    token: localStorage.getItem(LS_TOKEN) || '',
+    tokenExp: parseInt(localStorage.getItem(LS_TOKEN_EXP) || '0', 10)
+  };
+
+  let cache = { pastas: null, pp: null, doc: null };
+  let abaAtual = 'pastas';
+  let poller = null;
+
+  // ---------- elementos ----------
+  const telaLogin = document.getElementById('tela-login');
+  const telaApp = document.getElementById('tela-app');
+  const campoSenha = document.getElementById('campo-senha');
+  const campoUrlLogin = document.getElementById('campo-url');
+  const btnEntrar = document.getElementById('btn-entrar');
+  const erroLogin = document.getElementById('erro-login');
+  const campoBusca = document.getElementById('campo-busca');
+  const conteudo = document.getElementById('conteudo');
+  const infoContagem = document.getElementById('info-contagem');
+  const btnSair = document.getElementById('btn-sair');
+  const btnConfig = document.getElementById('btn-config');
+  const btnReprocessar = document.getElementById('btn-reprocessar');
+  const modalReprocessar = document.getElementById('modal-reprocessar');
+  const fecharModalReprocessar = document.getElementById('fechar-modal-reprocessar');
+  const statusReprocessar = document.getElementById('status-reprocessar');
+
+  // ---------- helpers ----------
+  function normalizar(txt){
+    return String(txt == null ? '' : txt)
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function sessaoValida(){
+    return estado.token && estado.tokenExp > Date.now();
+  }
+
+  async function chamarApi(action, payload){
+    if (!estado.url) throw new Error('URL do App da Web não configurada.');
+    const corpo = Object.assign({ action, token: estado.token }, payload || {});
+    const resp = await fetch(estado.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
+      body: JSON.stringify(corpo)
+    });
+    const json = await resp.json();
+    return json;
+  }
+
+  function linhasParaObjetos(dados){
+    if (!dados || !dados.headers) return [];
+    return dados.rows.map(linha => {
+      const obj = {};
+      dados.headers.forEach((h, i) => { obj[h] = linha[i]; });
+      return obj;
+    });
+  }
+
+  // ---------- login ----------
+  async function tentarEntrar(){
+    erroLogin.classList.remove('mostrar');
+    const senha = campoSenha.value.trim();
+    const url = campoUrlLogin.value.trim();
+    if (url) estado.url = url;
+
+    if (!estado.url){
+      erroLogin.textContent = 'Informe a URL do App da Web em "configurar conexão".';
+      erroLogin.classList.add('mostrar');
+      return;
+    }
+    if (!senha){
+      erroLogin.textContent = 'Digite a senha de acesso.';
+      erroLogin.classList.add('mostrar');
+      return;
+    }
+
+    btnEntrar.textContent = 'Entrando...';
+    btnEntrar.disabled = true;
+    try{
+      const r = await chamarApi('login', { senha });
+      if (r.ok){
+        estado.token = r.token;
+        estado.tokenExp = Date.now() + (11.5 * 60 * 60 * 1000); // 11h30 de margem
+        localStorage.setItem(LS_URL, estado.url);
+        localStorage.setItem(LS_TOKEN, estado.token);
+        localStorage.setItem(LS_TOKEN_EXP, String(estado.tokenExp));
+        campoSenha.value = '';
+        abrirApp();
+      } else {
+        erroLogin.textContent = r.erro || 'Não foi possível entrar.';
+        erroLogin.classList.add('mostrar');
+      }
+    } catch(e){
+      erroLogin.textContent = 'Erro de conexão: ' + e.message;
+      erroLogin.classList.add('mostrar');
+    } finally {
+      btnEntrar.textContent = 'Entrar';
+      btnEntrar.disabled = false;
+    }
+  }
+
+  function sair(){
+    estado.token = '';
+    estado.tokenExp = 0;
+    localStorage.removeItem(LS_TOKEN);
+    localStorage.removeItem(LS_TOKEN_EXP);
+    cache = { pastas: null, pp: null, doc: null };
+    telaApp.style.display = 'none';
+    telaLogin.style.display = 'flex';
+  }
+
+  function abrirApp(){
+    telaLogin.style.display = 'none';
+    telaApp.style.display = 'block';
+    carregarAba(abaAtual, false);
+  }
+
+  // ---------- carregamento de abas ----------
+  async function carregarAba(modulo, forcar){
+    abaAtual = modulo;
+    document.querySelectorAll('nav.abas button').forEach(b=>{
+      b.classList.toggle('ativa', b.dataset.modulo === modulo);
+    });
+    campoBusca.value = '';
+
+    const chaveCache = modulo === 'pastas' ? 'pastas' : (modulo === 'pp' ? 'pp' : 'doc');
+    if (cache[chaveCache] && !forcar){
+      renderizarAba(modulo);
+      return;
+    }
+
+    conteudo.innerHTML = '<div class="carregando">carregando dados...</div>';
+    try{
+      let acao = modulo === 'pastas' ? 'getPastas' : (modulo === 'pp' ? 'getProjetosProdutos' : 'getDocumentos');
+      const r = await chamarApi(acao, {});
+      if (!r.ok){
+        if (r.erro && r.erro.indexOf('Sessão') !== -1){ sair(); return; }
+        conteudo.innerHTML = '<div class="vazio">Erro ao carregar: ' + (r.erro||'desconhecido') + '</div>';
+        return;
+      }
+      cache[chaveCache] = linhasParaObjetos(r.dados);
+      renderizarAba(modulo);
+    } catch(e){
+      conteudo.innerHTML = '<div class="vazio">Erro de conexão: ' + e.message + '</div>';
+    }
+  }
+
+  function itensFiltrados(lista, termo){
+    if (!termo) return lista;
+    const t = normalizar(termo);
+    return lista.filter(obj => Object.values(obj).some(v => normalizar(v).indexOf(t) !== -1));
+  }
+
+  function renderizarAba(modulo){
+    const termo = campoBusca.value.trim();
+    if (modulo === 'pastas') renderPastas(itensFiltrados(cache.pastas || [], termo));
+    if (modulo === 'pp') renderProjetosProdutos(itensFiltrados(cache.pp || [], termo));
+    if (modulo === 'doc') renderDocumentos(itensFiltrados(cache.doc || [], termo));
+  }
+
+  function renderPastas(lista){
+    infoContagem.textContent = lista.length + ' pasta(s)';
+    if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhuma pasta encontrada.</div>'; return; }
+    conteudo.innerHTML = lista.map(p => `
+      <a class="cartao cor-pastas" href="${p['URL']||'#'}" target="_blank" rel="noopener">
+        <div class="titulo">${escapar(p['Nome'])}</div>
+        <div class="caminho">${escapar(p['Caminho Completo'])}</div>
+        <div class="chips">
+          <span class="chip">nível ${escapar(p['Nível'])}</span>
+          <span class="chip">${escapar(p['Última Modificação'])}</span>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  function renderProjetosProdutos(lista){
+    infoContagem.textContent = lista.length + ' item(ns)';
+    if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhum item encontrado.</div>'; return; }
+
+    const grupos = {};
+    lista.forEach(item => {
+      const chave = item['Categoria'] + ' | ' + item['Produto/Projeto (Raiz)'];
+      if (!grupos[chave]) grupos[chave] = { categoria: item['Categoria'], raiz: item['Produto/Projeto (Raiz)'], itens: [] };
+      grupos[chave].itens.push(item);
+    });
+
+    conteudo.innerHTML = Object.values(grupos).map(g => `
+      <details class="grupo" open>
+        <summary>
+          <span>${g.categoria === 'Produto' ? '🧩' : '📌'} ${escapar(g.raiz)}</span>
+          <span class="contagem">${g.itens.length}</span>
+        </summary>
+        ${g.itens.map(it => `
+          <a class="cartao ${g.categoria === 'Produto' ? 'cor-produto' : 'cor-projeto'}" href="${it['URL']||'#'}" target="_blank" rel="noopener">
+            <div class="titulo">${escapar(it['Nome'])}</div>
+            <div class="caminho">${escapar(it['Caminho Completo'])}</div>
+            <div class="chips">
+              <span class="chip">${escapar(g.categoria)}</span>
+              <span class="chip">${escapar(it['Última Modificação'])}</span>
+            </div>
+          </a>
+        `).join('')}
+      </details>
+    `).join('');
+  }
+
+  function renderDocumentos(lista){
+    infoContagem.textContent = lista.length + ' arquivo(s)';
+    if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhum documento encontrado.</div>'; return; }
+
+    const grupos = {};
+    lista.forEach(item => {
+      const chave = item['Categoria'];
+      if (!grupos[chave]) grupos[chave] = [];
+      grupos[chave].push(item);
+    });
+
+    conteudo.innerHTML = Object.keys(grupos).map(cat => `
+      <details class="grupo" open>
+        <summary>
+          <span>📁 ${escapar(cat)}</span>
+          <span class="contagem">${grupos[cat].length}</span>
+        </summary>
+        ${grupos[cat].map(doc => `
+          <a class="cartao cor-doc" href="${doc['URL']||'#'}" target="_blank" rel="noopener">
+            <div class="titulo">${escapar(doc['Nome'])}</div>
+            <div class="caminho">${escapar(doc['Pasta (Nome)'])}</div>
+            <div class="chips">
+              <span class="chip">${escapar(doc['Tipo'])}</span>
+              ${doc['Subcategoria'] ? '<span class="chip">'+escapar(doc['Subcategoria'])+'</span>' : ''}
+              <span class="chip">${escapar(doc['Tamanho (MB)'])} MB</span>
+              <span class="chip">${escapar(doc['Última Modificação'])}</span>
+            </div>
+          </a>
+        `).join('')}
+      </details>
+    `).join('');
+  }
+
+  function escapar(txt){
+    const d = document.createElement('div');
+    d.textContent = txt == null ? '' : String(txt);
+    return d.innerHTML;
+  }
+
+  // ---------- reprocessar ----------
+  function abrirModalReprocessar(){
+    modalReprocessar.classList.add('mostrar');
+    statusReprocessar.textContent = '';
+  }
+  function fecharModal(){
+    modalReprocessar.classList.remove('mostrar');
+    if (poller) clearInterval(poller);
+  }
+
+  async function iniciarReprocessamento(modulo){
+    statusReprocessar.textContent = 'Iniciando...';
+    try{
+      const r = await chamarApi('remapear', { modulo });
+      if (!r.ok){ statusReprocessar.textContent = 'Erro: ' + r.erro; return; }
+      statusReprocessar.textContent = r.mensagem;
+      acompanharStatus(modulo);
+    } catch(e){
+      statusReprocessar.textContent = 'Erro de conexão: ' + e.message;
+    }
+  }
+
+  function acompanharStatus(modulo){
+    if (poller) clearInterval(poller);
+    poller = setInterval(async () => {
+      try{
+        const r = await chamarApi('status', { modulo });
+        if (!r.ok) return;
+        statusReprocessar.textContent = 'Status: ' + r.status + ' · mapeados: ' + r.total + ' · na fila: ' + r.restante;
+        if (r.status === 'concluído'){
+          clearInterval(poller);
+          const chaveCache = modulo === 'pastas' ? 'pastas' : (modulo === 'projetosProdutos' ? 'pp' : 'doc');
+          cache[chaveCache] = null; // força recarregar na próxima vez que abrir a aba
         }
+      } catch(e){ /* silencioso, tenta de novo no próximo ciclo */ }
+    }, 4000);
+  }
 
-        function testarConexao() {
-            mostrarCarregando(true);
-            
-            chamarJsonp('listar', {}, function(data) {
-                mostrarCarregando(false);
-                if (data.success) {
-                    document.getElementById('telaLogin').style.display = 'none';
-                    document.getElementById('appPrincipal').style.display = 'flex';
-                    pastaAtual = null;
-                    carregarConteudo();
-                } else {
-                    mostrarErro(data.error || 'Falha na autenticação');
-                }
-            });
-        }
+  // ---------- eventos ----------
+  btnEntrar.addEventListener('click', tentarEntrar);
+  campoSenha.addEventListener('keydown', e => { if (e.key === 'Enter') tentarEntrar(); });
 
-        function sair() {
-            senhaAtual = null;
-            pastaAtual = null;
-            document.getElementById('telaLogin').style.display = 'flex';
-            document.getElementById('appPrincipal').style.display = 'none';
-            document.getElementById('senha').value = '';
-        }
+  btnSair.addEventListener('click', sair);
+  btnConfig.addEventListener('click', () => {
+    const novaUrl = prompt('URL do App da Web (Apps Script):', estado.url);
+    if (novaUrl !== null && novaUrl.trim()){
+      estado.url = novaUrl.trim();
+      localStorage.setItem(LS_URL, estado.url);
+    }
+  });
 
-        // ===== JSONP =====
-        function chamarJsonp(action, params, callback) {
-            const callbackName = 'jsonpCallback_' + Date.now();
-            
-            window[callbackName] = function(data) {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                callback(data);
-            };
+  document.querySelectorAll('nav.abas button').forEach(b => {
+    b.addEventListener('click', () => carregarAba(b.dataset.modulo, false));
+  });
 
-            const queryParams = new URLSearchParams({
-                callback: callbackName,
-                action: action,
-                senha: senhaAtual,
-                ...params
-            });
+  campoBusca.addEventListener('input', () => renderizarAba(abaAtual));
 
-            const script = document.createElement('script');
-            script.src = API_URL + '?' + queryParams.toString();
-            script.onerror = function() {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                mostrarErro('Erro de conexão');
-            };
-            
-            document.body.appendChild(script);
-        }
+  btnReprocessar.addEventListener('click', abrirModalReprocessar);
+  fecharModalReprocessar.addEventListener('click', fecharModal);
+  document.querySelectorAll('.opcao-modulo').forEach(b => {
+    b.addEventListener('click', () => iniciarReprocessamento(b.dataset.modulo));
+  });
 
-        // ===== CONTEÚDO =====
-        function carregarConteudo() {
-            mostrarCarregando(true);
-            
-            chamarJsonp('listar', { folderId: pastaAtual }, function(data) {
-                mostrarCarregando(false);
-                if (data.success) {
-                    renderizarConteudo(data.data);
-                } else {
-                    mostrarErro(data.error);
-                }
-            });
-        }
-
-        function renderizarConteudo(data) {
-            // Renderizar pastas
-            const listaPastas = document.getElementById('listaPastas');
-            listaPastas.innerHTML = '';
-            
-            data.pastas.forEach(pasta => {
-                const div = document.createElement('div');
-                div.className = 'pasta-item';
-                div.textContent = pasta.icon + ' ' + pasta.name;
-                div.onclick = () => {
-                    pastaAtual = pasta.id;
-                    carregarConteudo();
-                };
-                listaPastas.appendChild(div);
-            });
-
-            // Renderizar arquivos
-            const listaArquivos = document.getElementById('listaArquivos');
-            listaArquivos.innerHTML = '';
-            
-            data.arquivos.forEach(arquivo => {
-                const div = document.createElement('div');
-                div.className = 'arquivo-item';
-                div.innerHTML = `
-                    <div class="arquivo-icone">${arquivo.icon}</div>
-                    <div class="arquivo-nome">${arquivo.name}</div>
-                    <div class="arquivo-acoes">
-                        <button onclick="abrirArquivo('${arquivo.id}')">👁️</button>
-                        <button onclick="deletarItem('${arquivo.id}')">🗑️</button>
-                    </div>
-                `;
-                listaArquivos.appendChild(div);
-            });
-        }
-
-        function abrirArquivo(fileId) {
-            arquivoAtualId = fileId;
-            mostrarCarregando(true);
-
-            chamarJsonp('ler', { fileId: fileId }, function(data) {
-                mostrarCarregando(false);
-                if (data.success) {
-                    exibirArquivo(data.data);
-                } else {
-                    mostrarErro(data.error);
-                }
-            });
-        }
-
-        function exibirArquivo(arquivo) {
-            const modalTitulo = document.getElementById('modalTitulo');
-            const modalCorpo = document.getElementById('modalCorpo');
-            const btnSalvar = document.getElementById('btnSalvar');
-            
-            modalTitulo.textContent = arquivo.name;
-            btnSalvar.style.display = 'none';
-
-            if (arquivo.tipo === 'sheet') {
-                let html = '<div style="overflow-x: auto;">';
-                arquivo.conteudo.forEach(sheet => {
-                    html += `<h3>${sheet.name}</h3>`;
-                    html += '<table>';
-                    sheet.data.forEach(row => {
-                        html += '<tr>';
-                        row.forEach(cell => {
-                            html += `<td>${cell || ''}</td>`;
-                        });
-                        html += '</tr>';
-                    });
-                    html += '</table>';
-                });
-                html += '</div>';
-                modalCorpo.innerHTML = html;
-            } else if (arquivo.tipo === 'doc' || arquivo.tipo === 'texto') {
-                modalCorpo.innerHTML = `<textarea id="conteudoArquivo">${arquivo.conteudo}</textarea>`;
-                btnSalvar.style.display = 'block';
-            } else {
-                modalCorpo.innerHTML = `<p>${arquivo.conteudo}</p>`;
-            }
-
-            abrirModal('modalVer');
-        }
-
-        function salvarArquivo() {
-            if (!arquivoAtualId) return;
-
-            const conteudo = document.getElementById('conteudoArquivo').value;
-            mostrarCarregando(true);
-
-            chamarJsonp('salvar', { 
-                fileId: arquivoAtualId,
-                content: conteudo
-            }, function(data) {
-                mostrarCarregando(false);
-                if (data.success) {
-                    mostrarNotificacao('Arquivo salvo!');
-                    fecharModal('modalVer');
-                    carregarConteudo();
-                } else {
-                    mostrarErro(data.error);
-                }
-            });
-        }
-
-        function deletarItem(fileId) {
-            if (!confirm('Deletar este arquivo?')) return;
-
-            mostrarCarregando(true);
-            chamarJsonp('deletar', { fileId: fileId }, function(data) {
-                mostrarCarregando(false);
-                if (data.success) {
-                    mostrarNotificacao('Arquivo deletado!');
-                    carregarConteudo();
-                } else {
-                    mostrarErro(data.error);
-                }
-            });
-        }
-
-        // ===== CRIAR =====
-        function mostrarCriar(tipo) {
-            tipoAtualCriar = tipo;
-            const titulo = tipo === 'pasta' ? 'Nova Pasta' : 'Novo Arquivo';
-            document.getElementById('modalCriarTitulo').textContent = titulo;
-            document.getElementById('nomeCriar').value = '';
-            abrirModal('modalCriar');
-        }
-
-        function criarItem() {
-            const name = document.getElementById('nomeCriar').value;
-            if (!name) {
-                mostrarErro('Digite um nome');
-                return;
-            }
-
-            mostrarCarregando(true);
-            chamarJsonp('criar', {
-                name: name,
-                parentId: pastaAtual,
-                type: tipoAtualCriar
-            }, function(data) {
-                mostrarCarregando(false);
-                if (data.success) {
-                    mostrarNotificacao('Item criado!');
-                    fecharModal('modalCriar');
-                    carregarConteudo();
-                } else {
-                    mostrarErro(data.error);
-                }
-            });
-        }
-
-        // ===== UTILITÁRIOS =====
-        function abrirModal(id) {
-            document.getElementById(id).classList.add('ativo');
-        }
-
-        function fecharModal(id) {
-            document.getElementById(id).classList.remove('ativo');
-        }
-
-        function mostrarCarregando(show) {
-            document.getElementById('carregando').classList.toggle('ativo', show);
-        }
-
-        function mostrarErro(msg) {
-            const erroLogin = document.getElementById('erroLogin');
-            if (erroLogin && erroLogin.style.display !== 'none') {
-                erroLogin.textContent = msg;
-                erroLogin.style.display = 'block';
-            }
-            mostrarNotificacao(msg, true);
-        }
-
-        function mostrarNotificacao(msg, isErro = false) {
-            const notif = document.getElementById('notificacao');
-            notif.textContent = msg;
-            notif.classList.toggle('erro', isErro);
-            notif.classList.add('ativo');
-            setTimeout(() => notif.classList.remove('ativo'), 3000);
-        }
-
-        function recarregar() {
-            carregarConteudo();
-        }
-
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('ativo');
-            }
-        });
-    </script>
+  // ---------- inicialização ----------
+  campoUrlLogin.value = estado.url;
+  if (sessaoValida()){
+    abrirApp();
+  }
+})();
+</script>
 </body>
 </html>
