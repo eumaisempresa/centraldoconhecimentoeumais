@@ -414,13 +414,9 @@
       <input type="password" id="campo-senha" placeholder="••••••••" autocomplete="current-password" />
     </div>
 
-    <details class="avancado" id="detalhes-conexao">
-      <summary>⚙ configurar conexão</summary>
-      <div class="campo">
-        <label for="campo-url">URL do App da Web (Apps Script)</label>
-        <input type="text" id="campo-url" placeholder="https://script.google.com/macros/s/.../exec" />
-      </div>
-    </details>
+        <p class="sub" style="margin-top: 14px; margin-bottom: 0; font-size: 11px;">Conexão oficial configurada para este painel.</p>
+
+
 
     <button class="btn btn-primario" id="btn-entrar">Entrar</button>
   </div>
@@ -484,12 +480,12 @@
   "use strict";
 
   // ---------- estado / storage ----------
-  const LS_URL = 'eudrive_url';
+  const APP_URL = 'https://script.google.com/macros/s/AKfycbzku3SSiKXzRv7Vty_XwSa_-_oz-UwPs0Fnvc7lx8qccYJmQKHDcK_vefN3--SRoRqbHQ/exec';
   const LS_TOKEN = 'eudrive_token';
   const LS_TOKEN_EXP = 'eudrive_token_exp';
 
   let estado = {
-    url: localStorage.getItem(LS_URL) || '',
+    url: APP_URL,
     token: localStorage.getItem(LS_TOKEN) || '',
     tokenExp: parseInt(localStorage.getItem(LS_TOKEN_EXP) || '0', 10)
   };
@@ -507,7 +503,7 @@
   const telaLogin = document.getElementById('tela-login');
   const telaApp = document.getElementById('tela-app');
   const campoSenha = document.getElementById('campo-senha');
-  const campoUrlLogin = document.getElementById('campo-url');
+  
   const btnEntrar = document.getElementById('btn-entrar');
   const erroLogin = document.getElementById('erro-login');
   const campoBusca = document.getElementById('campo-busca');
@@ -534,16 +530,29 @@
     return estado.token && estado.tokenExp > Date.now();
   }
 
-  async function chamarApi(action, payload){
-    if (!estado.url) throw new Error('URL do App da Web não configurada.');
-    const corpo = Object.assign({ action, token: estado.token }, payload || {});
-    const resp = await fetch(estado.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
-      body: JSON.stringify(corpo)
+  function chamarApi(action, payload){
+    return new Promise((resolve, reject) => {
+      const callbackName = 'ccJsonp_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      const script = document.createElement('script');
+      const query = new URLSearchParams();
+      const corpo = Object.assign({ action: action, token: estado.token }, payload || {});
+      query.set('callback', callbackName);
+      Object.keys(corpo).forEach(chave => {
+        const valor = corpo[chave];
+        query.set(chave, valor != null && typeof valor === 'object' ? JSON.stringify(valor) : String(valor == null ? '' : valor));
+      });
+      let finalizado = false;
+      const limpar = () => {
+        if (finalizado) return;
+        finalizado = true;
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callbackName] = dados => { limpar(); resolve(dados); };
+      script.onerror = () => { limpar(); reject(new Error('Não foi possível conectar ao Apps Script.')); };
+      script.src = APP_URL + '?' + query.toString();
+      document.body.appendChild(script);
     });
-    const json = await resp.json();
-    return json;
   }
 
   function linhasParaObjetos(dados){
@@ -559,14 +568,7 @@
   async function tentarEntrar(){
     erroLogin.classList.remove('mostrar');
     const senha = campoSenha.value.trim();
-    const url = campoUrlLogin.value.trim();
-    if (url) estado.url = url;
 
-    if (!estado.url){
-      erroLogin.textContent = 'Informe a URL do App da Web em "configurar conexão".';
-      erroLogin.classList.add('mostrar');
-      return;
-    }
     if (!senha){
       erroLogin.textContent = 'Digite a senha de acesso.';
       erroLogin.classList.add('mostrar');
@@ -580,7 +582,6 @@
       if (r.ok){
         estado.token = r.token;
         estado.tokenExp = Date.now() + (11.5 * 60 * 60 * 1000); // 11h30 de margem
-        localStorage.setItem(LS_URL, estado.url);
         localStorage.setItem(LS_TOKEN, estado.token);
         localStorage.setItem(LS_TOKEN_EXP, String(estado.tokenExp));
         campoSenha.value = '';
@@ -840,11 +841,7 @@
 
   btnSair.addEventListener('click', sair);
   btnConfig.addEventListener('click', () => {
-    const novaUrl = prompt('URL do App da Web (Apps Script):', estado.url);
-    if (novaUrl !== null && novaUrl.trim()){
-      estado.url = novaUrl.trim();
-      localStorage.setItem(LS_URL, estado.url);
-    }
+    alert('A conexão deste painel já está configurada para o Apps Script oficial.');
   });
 
   document.querySelectorAll('nav.abas button').forEach(b => {
@@ -863,7 +860,6 @@
   });
 
   // ---------- inicialização ----------
-  campoUrlLogin.value = estado.url;
   if (sessaoValida()){
     abrirApp();
   }
