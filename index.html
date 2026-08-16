@@ -736,9 +736,9 @@
   function renderizarAba(modulo){
     const termo = campoBusca.value.trim();
     if (modulo === 'central') renderPastas(itensFiltrados(cache.pastas || [], termo));
-    if (modulo === 'projetos') renderProjetosProdutos((cache.pp || []).filter(x => normalizar(x['Categoria']) === 'projeto').filter(x => itensFiltrados([x], termo).length));
-    if (modulo === 'produtos') renderProjetosProdutos((cache.pp || []).filter(x => normalizar(x['Categoria']) === 'produto').filter(x => itensFiltrados([x], termo).length));
-    if (modulo === 'biblioteca') renderDocumentos(itensFiltrados(cache.doc || [], termo));
+    if (modulo === 'projetos') renderAreaHierarquica((cache.pp || []).filter(x => normalizar(x['Categoria']).indexOf('projeto') === 0).filter(x => itensFiltrados([x], termo).length), 'Projetos', 'pastas');
+    if (modulo === 'produtos') renderAreaHierarquica((cache.pp || []).filter(x => normalizar(x['Categoria']).indexOf('produto') === 0).filter(x => itensFiltrados([x], termo).length), 'Produtos', 'pastas');
+    if (modulo === 'biblioteca') renderAreaHierarquica((cache.doc || []).filter(x => normalizar(x['Categoria']) === 'biblioteca').filter(x => itensFiltrados([x], termo).length), 'Biblioteca', 'documentos');
   }
 
   function renderPastas(lista){
@@ -787,6 +787,70 @@
           </div>
         </details>`;
     }).join('');
+  }
+
+  function renderAreaHierarquica(lista, nomeArea, tipo){
+    infoContagem.textContent = lista.length + (tipo === 'documentos' ? ' arquivo(s)' : ' pasta(s)');
+    if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhum item encontrado em ' + escapar(nomeArea) + '.</div>'; return; }
+    const arvore = construirArvoreArea(lista, nomeArea, tipo);
+    conteudo.innerHTML = renderNosArea(arvore, 0, tipo);
+  }
+
+  function construirArvoreArea(lista, nomeArea, tipo){
+    const raiz = { nome: nomeArea, url: '', filhos: [], documentos: [] };
+    const porCaminho = { '': raiz };
+    lista.forEach((item, index) => {
+      let caminho = String(item['Caminho Completo'] || item['Pasta (Nome)'] || '').trim();
+      const partes = caminho.split(' / ').filter(Boolean);
+      if (partes.length && normalizar(partes[0]) === normalizar(nomeArea)) partes.shift();
+      let atual = raiz;
+      let acumulado = '';
+      if (tipo === 'documentos'){
+        const pastaNome = String(item['Pasta (Nome)'] || '').trim();
+        const pastaPartes = partes.length ? partes : (pastaNome && normalizar(pastaNome) !== normalizar(nomeArea) ? [pastaNome] : []);
+        pastaPartes.forEach(parte => {
+          acumulado += '/' + parte;
+          if (!porCaminho[acumulado]) porCaminho[acumulado] = { nome: parte, url: '', filhos: [], documentos: [] };
+          if (atual.filhos.indexOf(porCaminho[acumulado]) === -1) atual.filhos.push(porCaminho[acumulado]);
+          atual = porCaminho[acumulado];
+        });
+        atual.documentos.push(item);
+      } else {
+        partes.forEach(parte => {
+          acumulado += '/' + parte;
+          if (!porCaminho[acumulado]) porCaminho[acumulado] = { nome: parte, url: '', filhos: [], documentos: [], item: null };
+          if (atual.filhos.indexOf(porCaminho[acumulado]) === -1) atual.filhos.push(porCaminho[acumulado]);
+          atual = porCaminho[acumulado];
+        });
+        atual.item = item;
+        atual.url = item['URL'] || '';
+      }
+    });
+    const ordenar = node => {
+      node.filhos.sort((a,b) => normalizar(a.nome).localeCompare(normalizar(b.nome), 'pt-BR'));
+      node.documentos.sort((a,b) => normalizar(a['Nome']).localeCompare(normalizar(b['Nome']), 'pt-BR'));
+      node.filhos.forEach(ordenar);
+      return node;
+    };
+    return ordenar(raiz);
+  }
+
+  function renderNosArea(node, nivel, tipo){
+    const total = node.filhos.length + node.documentos.length;
+    const aberto = nivel === 0 ? ' open' : '';
+    const conteudoDocs = node.documentos.map(doc => `
+      <a class="cartao cor-doc" href="${doc['URL'] || '#'}" target="_blank" rel="noopener">
+        <div class="titulo">${escapar(doc['Nome'])}</div>
+        <div class="caminho">${escapar(doc['Caminho Completo'] || doc['Pasta (Nome)'])}</div>
+        <div class="chips"><span class="chip">${escapar(doc['Tipo'])}</span><span class="chip">${escapar(doc['Última Modificação'])}</span></div>
+      </a>`).join('');
+    const filhos = node.filhos.map(filho => renderNosArea(filho, nivel + 1, tipo)).join('');
+    const acesso = node.url ? '<a class="arvore-acesso" href="' + node.url + '" target="_blank" rel="noopener">Abrir esta pasta no Drive ↗</a>' : '';
+    return `
+      <details class="arvore-nivel"${aberto}>
+        <summary><span class="arvore-titulo"><span class="arvore-seta">›</span><span>📁</span>${escapar(node.nome)}</span><span class="contagem">${total} ${total === 1 ? 'item' : 'itens'}</span></summary>
+        <div class="arvore-conteudo">${acesso}${conteudoDocs}${filhos || (!conteudoDocs ? '<div class="arvore-vazia">Nenhum item neste nível.</div>' : '')}</div>
+      </details>`;
   }
 
   function renderProjetosProdutos(lista){
