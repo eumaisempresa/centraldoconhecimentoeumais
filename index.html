@@ -197,9 +197,10 @@
     transform: translateY(0);
     z-index: 2;
   }
-  nav.abas button[data-modulo="pastas"].ativa{ box-shadow: inset 0 3px 0 var(--accent); }
-  nav.abas button[data-modulo="pp"].ativa{ box-shadow: inset 0 3px 0 var(--sage); }
-  nav.abas button[data-modulo="doc"].ativa{ box-shadow: inset 0 3px 0 var(--blue); }
+  nav.abas button[data-modulo="central"].ativa{ box-shadow: inset 0 3px 0 var(--accent); }
+  nav.abas button[data-modulo="projetos"].ativa{ box-shadow: inset 0 3px 0 #8B7FC4; }
+  nav.abas button[data-modulo="produtos"].ativa{ box-shadow: inset 0 3px 0 var(--sage); }
+  nav.abas button[data-modulo="biblioteca"].ativa{ box-shadow: inset 0 3px 0 var(--blue); }
 
   main{ padding: 16px; padding-bottom: 90px; }
 
@@ -276,6 +277,19 @@
     color: var(--muted);
     font-weight: 400;
   }
+  details.arvore-nivel{ margin:0 0 8px; border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:10px; background:rgba(29,34,42,.82); overflow:hidden; }
+  details.arvore-nivel details.arvore-nivel{ margin:8px 0 0; border-left-color:var(--sage); background:rgba(38,44,54,.56); }
+  details.arvore-nivel details.arvore-nivel details.arvore-nivel{ border-left-color:var(--blue); }
+  details.arvore-nivel > summary{ list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 14px; font-weight:600; font-size:14px; }
+  details.arvore-nivel > summary::-webkit-details-marker{ display:none; }
+  details.arvore-titulo{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .arvore-titulo > span:last-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .arvore-seta{ display:inline-block; color:var(--accent); font-size:20px; line-height:12px; transform:rotate(0deg); transition:transform .18s ease; }
+  details.arvore-nivel[open] > summary .arvore-seta{ transform:rotate(90deg); }
+  .arvore-conteudo{ padding:0 12px 12px 28px; }
+  .arvore-acesso{ display:inline-block; color:var(--accent); font-family:var(--font-mono); font-size:11px; margin:0 0 9px; text-decoration:none; }
+  .arvore-acesso:hover{ text-decoration:underline; }
+  .arvore-vazia{ color:var(--muted); font-family:var(--font-mono); font-size:11px; padding:8px 0; }
 
   .vazio{
     text-align:center;
@@ -346,11 +360,33 @@
     .chat-input-bar{ max-width: 900px; margin: 0 auto; }
   }
 
-  /* ---------- ASSISTENTE DE IA ---------- */
-  body[data-aba="ia"] .busca-wrap{ display:none; }
-  body[data-aba="ia"] .barra-info{ display:none; }
-  #painel-ia{ display:none; }
-  body[data-aba="ia"] #painel-ia{ display:block; }
+  /* ---------- ASSISTENTE DE IA FLUTUANTE ---------- */
+  .btn-ia-flutuante{
+    position:fixed; right:18px; bottom:20px; z-index:45;
+    width:58px; height:58px; border-radius:50%; border:1px solid rgba(227,169,77,.8);
+    background:var(--accent); color:var(--accent-ink); box-shadow:0 10px 28px rgba(0,0,0,.35);
+    font-size:25px; cursor:pointer; transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .btn-ia-flutuante:hover{ transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,.45); }
+  .btn-ia-flutuante:active{ transform:scale(.96); }
+  .painel-ia-flutuante{
+    display:none; position:fixed; right:18px; bottom:88px; z-index:44;
+    width:min(420px, calc(100vw - 28px)); height:min(620px, calc(100vh - 112px));
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    box-shadow:0 18px 50px rgba(0,0,0,.48); overflow:hidden;
+    flex-direction:column;
+  }
+  .painel-ia-flutuante.mostrar{ display:flex; }
+  .cabecalho-ia-flutuante{ display:flex; align-items:center; justify-content:space-between; padding:13px 15px; border-bottom:1px solid var(--line); background:var(--surface-2); }
+  .cabecalho-ia-flutuante strong{ font-family:var(--font-display); font-size:17px; }
+  .fechar-ia{ border:0; background:transparent; color:var(--muted); cursor:pointer; font-size:19px; padding:4px 8px; }
+  .chat-mensagens{ flex:1; min-height:0; overflow-y:auto; }
+  .chat-input-bar{ position:static; display:flex; gap:8px; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:var(--bg); border-top:1px solid var(--line); z-index:auto; }
+  .chat-input-bar input{ flex:1; min-width:0; }
+  @media (max-width:520px){
+    .painel-ia-flutuante{ right:10px; bottom:78px; width:calc(100vw - 20px); height:min(70vh, 560px); }
+    .btn-ia-flutuante{ right:12px; bottom:14px; width:54px; height:54px; }
+  }
 
   .chat-mensagens{
     display:flex; flex-direction:column; gap:10px;
@@ -379,16 +415,7 @@
   }
   .bolha.ia.carregando{ color: var(--muted); font-style: italic; }
 
-  .chat-input-bar{
-    position: fixed; left:0; right:0; bottom:0;
-    display:none; gap:8px;
-    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-    background: var(--bg);
-    border-top: 1px solid var(--line);
-    z-index: 30;
-  }
-  body[data-aba="ia"] .chat-input-bar{ display:flex; }
-  .chat-input-bar input{ flex:1; }
+  
   .btn-enviar-chat{
     width:44px; height:44px;
     border-radius:8px; border:none;
@@ -438,11 +465,11 @@
     <div class="busca-wrap">
       <input type="search" id="campo-busca" placeholder="buscar://" />
     </div>
-    <nav class="abas">
-      <button class="ativa" data-modulo="pastas">Pastas</button>
-      <button data-modulo="pp">Produtos/Projetos</button>
-      <button data-modulo="doc">Documentos</button>
-      <button data-modulo="ia">🤖 IA</button>
+    <nav class="abas" aria-label="Áreas da Central">
+      <button class="ativa" data-modulo="central">Central</button>
+      <button data-modulo="projetos">Projetos</button>
+      <button data-modulo="produtos">Produtos</button>
+      <button data-modulo="biblioteca">Biblioteca</button>
     </nav>
   </header>
 
@@ -452,15 +479,20 @@
       <span class="refazer" id="btn-reprocessar">↻ reprocessar</span>
     </div>
     <div id="conteudo"></div>
-    <div id="painel-ia">
-      <div class="chat-mensagens" id="chat-mensagens"></div>
-    </div>
   </main>
 
-  <div class="chat-input-bar" id="chat-input-bar">
-    <input type="text" id="campo-chat-ia" placeholder="Pergunte sobre pastas, produtos ou documentos..." />
-    <button class="btn-enviar-chat" id="btn-enviar-ia">➤</button>
-  </div>
+  <button class="btn-ia-flutuante" id="btn-ia-flutuante" title="Abrir assistente IA" aria-label="Abrir assistente IA">✦</button>
+  <aside class="painel-ia-flutuante" id="painel-ia-flutuante" aria-label="Assistente de IA">
+    <div class="cabecalho-ia-flutuante">
+      <strong>Assistente EU+ IA</strong>
+      <button class="fechar-ia" id="fechar-ia-flutuante" aria-label="Fechar assistente">×</button>
+    </div>
+    <div class="chat-mensagens" id="chat-mensagens"></div>
+    <div class="chat-input-bar" id="chat-input-bar">
+      <input type="text" id="campo-chat-ia" placeholder="Pergunte sobre o conteúdo do Drive..." autocomplete="off" />
+      <button class="btn-enviar-chat" id="btn-enviar-ia" aria-label="Enviar pergunta">➤</button>
+    </div>
+  </aside>
 </div>
 
 <!-- ===================== MODAL: REPROCESSAR ===================== -->
@@ -481,17 +513,23 @@
 
   // ---------- estado / storage ----------
   const APP_URL = 'https://script.google.com/macros/s/AKfycbzku3SSiKXzRv7Vty_XwSa_-_oz-UwPs0Fnvc7lx8qccYJmQKHDcK_vefN3--SRoRqbHQ/exec';
+  // O módulo IA é um arquivo .gs separado, mas compartilha o mesmo Web App do backend V3.
+  const IA_APP_URL = APP_URL;
   const LS_TOKEN = 'eudrive_token';
   const LS_TOKEN_EXP = 'eudrive_token_exp';
+  const LS_IA_TOKEN = 'eudrive_ia_token';
+  const LS_IA_TOKEN_EXP = 'eudrive_ia_token_exp';
 
   let estado = {
     url: APP_URL,
     token: localStorage.getItem(LS_TOKEN) || '',
-    tokenExp: parseInt(localStorage.getItem(LS_TOKEN_EXP) || '0', 10)
+    tokenExp: parseInt(localStorage.getItem(LS_TOKEN_EXP) || '0', 10),
+    iaToken: localStorage.getItem(LS_IA_TOKEN) || localStorage.getItem(LS_TOKEN) || '',
+    iaTokenExp: parseInt(localStorage.getItem(LS_IA_TOKEN_EXP) || '0', 10)
   };
 
   let cache = { pastas: null, pp: null, doc: null };
-  let abaAtual = 'pastas';
+  let abaAtual = 'central';
   let poller = null;
 
   // estado do chat com a IA
@@ -518,6 +556,9 @@
   const chatMensagensEl = document.getElementById('chat-mensagens');
   const campoChatIA = document.getElementById('campo-chat-ia');
   const btnEnviarIA = document.getElementById('btn-enviar-ia');
+  const btnIAFlutuante = document.getElementById('btn-ia-flutuante');
+  const painelIAFlutuante = document.getElementById('painel-ia-flutuante');
+  const btnFecharIAFlutuante = document.getElementById('fechar-ia-flutuante');
 
   // ---------- helpers ----------
   function normalizar(txt){
@@ -530,12 +571,20 @@
     return estado.token && estado.tokenExp > Date.now();
   }
 
-  function chamarApi(action, payload){
+  function appConfigurada(url){
+    return url && url.indexOf('COLE_A_URL_') !== 0;
+  }
+
+  function chamarEndpoint(url, action, token, payload){
     return new Promise((resolve, reject) => {
+      if (!appConfigurada(url)){
+        reject(new Error('A URL do Apps Script da IA ainda não foi configurada no HTML.'));
+        return;
+      }
       const callbackName = 'ccJsonp_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       const script = document.createElement('script');
       const query = new URLSearchParams();
-      const corpo = Object.assign({ action: action, token: estado.token }, payload || {});
+      const corpo = Object.assign({ action: action, token: token || '' }, payload || {});
       query.set('callback', callbackName);
       Object.keys(corpo).forEach(chave => {
         const valor = corpo[chave];
@@ -550,9 +599,17 @@
       };
       window[callbackName] = dados => { limpar(); resolve(dados); };
       script.onerror = () => { limpar(); reject(new Error('Não foi possível conectar ao Apps Script.')); };
-      script.src = APP_URL + '?' + query.toString();
+      script.src = url + '?' + query.toString();
       document.body.appendChild(script);
     });
+  }
+
+  function chamarApi(action, payload){
+    return chamarEndpoint(APP_URL, action, estado.token, payload);
+  }
+
+  function chamarIA(action, payload){
+    return chamarEndpoint(IA_APP_URL, action, estado.iaToken, payload);
   }
 
   function linhasParaObjetos(dados){
@@ -581,9 +638,22 @@
       const r = await chamarApi('login', { senha });
       if (r.ok){
         estado.token = r.token;
-        estado.tokenExp = Date.now() + (11.5 * 60 * 60 * 1000); // 11h30 de margem
+        estado.tokenExp = Date.now() + (5.5 * 60 * 60 * 1000);
         localStorage.setItem(LS_TOKEN, estado.token);
         localStorage.setItem(LS_TOKEN_EXP, String(estado.tokenExp));
+        if (appConfigurada(IA_APP_URL)){
+          try{
+            const ria = await chamarEndpoint(IA_APP_URL, 'login', '', { senha });
+            if (ria.ok){
+              estado.iaToken = ria.token;
+              estado.iaTokenExp = Date.now() + (5.5 * 60 * 60 * 1000);
+              localStorage.setItem(LS_IA_TOKEN, estado.iaToken);
+              localStorage.setItem(LS_IA_TOKEN_EXP, String(estado.iaTokenExp));
+            }
+          } catch(iaErro){
+            console.warn('IA não autenticada:', iaErro.message);
+          }
+        }
         campoSenha.value = '';
         abrirApp();
       } else {
@@ -600,10 +670,15 @@
   }
 
   function sair(){
+    fecharIAFlutuante();
     estado.token = '';
     estado.tokenExp = 0;
+    estado.iaToken = '';
+    estado.iaTokenExp = 0;
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_TOKEN_EXP);
+    localStorage.removeItem(LS_IA_TOKEN);
+    localStorage.removeItem(LS_IA_TOKEN_EXP);
     cache = { pastas: null, pp: null, doc: null };
     telaApp.style.display = 'none';
     telaLogin.style.display = 'flex';
@@ -624,17 +699,13 @@
     });
 
     if (modulo === 'ia'){
-      if (!chatIniciado){
-        adicionarBolha('ia', 'Oi! Sou o assistente da Central do Conhecimento EU+. Pergunte sobre pastas, produtos, projetos ou documentos mapeados — por exemplo: "onde estão os arquivos do produto X?"');
-        chatIniciado = true;
-      }
-      setTimeout(() => campoChatIA.focus(), 200);
+      abrirIAFlutuante();
       return;
     }
 
     campoBusca.value = '';
 
-    const chaveCache = modulo === 'pastas' ? 'pastas' : (modulo === 'pp' ? 'pp' : 'doc');
+    const chaveCache = modulo === 'central' ? 'pastas' : ((modulo === 'projetos' || modulo === 'produtos') ? 'pp' : 'doc');
     if (cache[chaveCache] && !forcar){
       renderizarAba(modulo);
       return;
@@ -642,7 +713,7 @@
 
     conteudo.innerHTML = '<div class="carregando">carregando dados...</div>';
     try{
-      let acao = modulo === 'pastas' ? 'getPastas' : (modulo === 'pp' ? 'getProjetosProdutos' : 'getDocumentos');
+      let acao = modulo === 'central' ? 'getPastas' : ((modulo === 'projetos' || modulo === 'produtos') ? 'getProjetosProdutos' : 'getDocumentos');
       const r = await chamarApi(acao, {});
       if (!r.ok){
         if (r.erro && r.erro.indexOf('Sessão') !== -1){ sair(); return; }
@@ -664,24 +735,58 @@
 
   function renderizarAba(modulo){
     const termo = campoBusca.value.trim();
-    if (modulo === 'pastas') renderPastas(itensFiltrados(cache.pastas || [], termo));
-    if (modulo === 'pp') renderProjetosProdutos(itensFiltrados(cache.pp || [], termo));
-    if (modulo === 'doc') renderDocumentos(itensFiltrados(cache.doc || [], termo));
+    if (modulo === 'central') renderPastas(itensFiltrados(cache.pastas || [], termo));
+    if (modulo === 'projetos') renderProjetosProdutos((cache.pp || []).filter(x => normalizar(x['Categoria']) === 'projeto').filter(x => itensFiltrados([x], termo).length));
+    if (modulo === 'produtos') renderProjetosProdutos((cache.pp || []).filter(x => normalizar(x['Categoria']) === 'produto').filter(x => itensFiltrados([x], termo).length));
+    if (modulo === 'biblioteca') renderDocumentos(itensFiltrados(cache.doc || [], termo));
   }
 
   function renderPastas(lista){
     infoContagem.textContent = lista.length + ' pasta(s)';
     if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhuma pasta encontrada.</div>'; return; }
-    conteudo.innerHTML = lista.map(p => `
-      <a class="cartao cor-pastas" href="${p['URL']||'#'}" target="_blank" rel="noopener">
-        <div class="titulo">${escapar(p['Nome'])}</div>
-        <div class="caminho">${escapar(p['Caminho Completo'])}</div>
-        <div class="chips">
-          <span class="chip">nível ${escapar(p['Nível'])}</span>
-          <span class="chip">${escapar(p['Última Modificação'])}</span>
-        </div>
-      </a>
-    `).join('');
+    const arvore = construirArvorePastas(lista);
+    conteudo.innerHTML = renderNosPastas(arvore, 0);
+  }
+
+  function construirArvorePastas(lista){
+    const porId = {};
+    const raizes = [];
+    lista.forEach((item, index) => {
+      const id = item['ID'] || item['ID da Pasta'] || item['Folder ID'] || item['id'] || ('linha-' + index);
+      porId[id] = { item, id, filhos: [] };
+    });
+    Object.values(porId).forEach(node => {
+      const item = node.item;
+      const pai = item['ID da Pasta Pai'] || item['Parent ID'] || item['parentId'] || item['ID Pai'] || '';
+      if (pai && porId[pai] && pai !== node.id) porId[pai].filhos.push(node);
+      else raizes.push(node);
+    });
+    const ordenar = nodes => {
+      nodes.sort((a,b) => normalizar(a.item['Nome']).localeCompare(normalizar(b.item['Nome']), 'pt-BR'));
+      nodes.forEach(n => ordenar(n.filhos));
+      return nodes;
+    };
+    return ordenar(raizes);
+  }
+
+  function renderNosPastas(nodes, nivel){
+    return nodes.map(node => {
+      const p = node.item;
+      const nome = p['Nome'] || 'Pasta sem nome';
+      const filhos = node.filhos.length ? renderNosPastas(node.filhos, nivel + 1) : '<div class="arvore-vazia">Nenhuma subpasta neste nível.</div>';
+      const aberto = nivel === 0 ? ' open' : '';
+      return `
+        <details class="arvore-nivel"${aberto}>
+          <summary>
+            <span class="arvore-titulo"><span class="arvore-seta">›</span><span>📁</span>${escapar(nome)}</span>
+            <span class="contagem">${node.filhos.length} ${node.filhos.length === 1 ? 'item' : 'itens'}</span>
+          </summary>
+          <div class="arvore-conteudo">
+            <a class="arvore-acesso" href="${p['URL'] || '#'}" target="_blank" rel="noopener">Abrir esta pasta no Drive ↗</a>
+            ${filhos}
+          </div>
+        </details>`;
+    }).join('');
   }
 
   function renderProjetosProdutos(lista){
@@ -755,6 +860,19 @@
   }
 
   // ---------- assistente de IA ----------
+  function abrirIAFlutuante(){
+    painelIAFlutuante.classList.add('mostrar');
+    if (!chatIniciado){
+      adicionarBolha('ia', 'Olá! Sou o assistente da Central do Conhecimento EU+. Posso ler documentos autorizados, resumir conteúdos e registrar aprendizados. Pergunte sobre qualquer área do Drive.');
+      chatIniciado = true;
+    }
+    setTimeout(() => campoChatIA.focus(), 120);
+  }
+
+  function fecharIAFlutuante(){
+    painelIAFlutuante.classList.remove('mostrar');
+  }
+
   function adicionarBolha(papel, texto, carregando){
     contadorBolha++;
     const id = 'bolha-' + contadorBolha;
@@ -782,7 +900,7 @@
 
     const idCarregando = adicionarBolha('ia', 'digitando...', true);
     try{
-      const r = await chamarApi('perguntarIA', { pergunta: texto, historico: historicoChatIA.slice(-10) });
+      const r = await chamarIA('perguntarIA', { pergunta: texto, historico: historicoChatIA.slice(-10) });
       removerBolha(idCarregando);
       if (r.ok){
         adicionarBolha('ia', r.resposta);
@@ -850,6 +968,8 @@
 
   campoBusca.addEventListener('input', () => renderizarAba(abaAtual));
 
+  btnIAFlutuante.addEventListener('click', abrirIAFlutuante);
+  btnFecharIAFlutuante.addEventListener('click', fecharIAFlutuante);
   btnEnviarIA.addEventListener('click', enviarMensagemIA);
   campoChatIA.addEventListener('keydown', e => { if (e.key === 'Enter') enviarMensagemIA(); });
 
