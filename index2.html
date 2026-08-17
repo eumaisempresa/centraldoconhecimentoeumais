@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Central do Conhecimento EU+ · Painel do Drive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg: #15181D;
+    --surface: #1D222A;
+    --surface-2: #262C36;
+    --line: #333B47;
+    --ink: #ECE8DF;
+    --muted: #8B92A0;
+    --accent: #E3A94D;      /* amber ficha manila */
+    --accent-ink: #2A1E0A;
+    --sage: #6E9C87;        /* produtos/projetos */
+    --blue: #6E8FB8;        /* documentos */
+    --danger: #D9614F;
+    --radius: 10px;
+    --font-display: 'IBM Plex Serif', serif;
+    --font-body: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  button, input{ font-family: inherit; }
+  ::selection{ background: var(--accent); color: var(--accent-ink); }
+  a{ color: inherit; }
+
+  /* ---------- LOGIN ---------- */
+  #tela-login{
+    min-height: 100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  .cartao-login{
+    width:100%;
+    max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 24px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cartao-login::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:6px;
+    background: linear-gradient(90deg, var(--accent), var(--sage), var(--blue));
+  }
+  .selo{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .cartao-login h1{
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    line-height: 1.25;
+  }
+  .cartao-login p.sub{
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 22px;
+  }
+  label{
+    display:block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: .02em;
+  }
+  input[type="password"], input[type="text"], input[type="search"]{
+    width:100%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 15px;
+    outline: none;
+  }
+  input:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px rgba(227,169,77,.18); }
+  .campo{ margin-bottom: 16px; }
+  details.avancado{ margin: 4px 0 20px; }
+  details.avancado summary{
+    cursor:pointer;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    list-style: none;
+  }
+  details.avancado summary::-webkit-details-marker{ display:none; }
+  details.avancado[open] summary{ color: var(--accent); }
+  details.avancado .campo{ margin-top: 12px; }
+  .btn{
+    appearance:none;
+    border:none;
+    border-radius: 8px;
+    padding: 13px 18px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor:pointer;
+    width:100%;
+  }
+  .btn-primario{ background: var(--accent); color: var(--accent-ink); }
+  .btn-primario:active{ transform: translateY(1px); }
+  .msg-erro{
+    background: rgba(217,97,79,.12);
+    border: 1px solid rgba(217,97,79,.4);
+    color: #F1A79C;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display:none;
+  }
+  .msg-erro.mostrar{ display:block; }
+
+  /* ---------- APP ---------- */
+  #tela-app{ display:none; min-height: 100vh; }
+  header.topo{
+    position: sticky; top:0; z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 16px 0;
+  }
+  .linha-topo{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 12px;
+  }
+  .marca{ display:flex; flex-direction:column; }
+  .marca .selo{ margin-bottom: 2px; }
+  .marca h2{ font-family: var(--font-display); font-size: 17px; margin:0; font-weight:600; }
+  .acoes-topo{ display:flex; gap:8px; }
+  .icone-btn{
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--surface);
+    border:1px solid var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor:pointer;
+    font-size: 16px;
+  }
+  .icone-btn:active{ background: var(--surface-2); }
+  .busca-wrap{ margin-bottom: 12px; }
+  .busca-wrap input{ font-family: var(--font-mono); font-size: 14px; }
+
+  /* abas em formato de ficha/pasta */
+  nav.abas{
+    display:flex;
+    gap: 4px;
+    padding: 0 2px;
+  }
+  nav.abas button{
+    flex:1;
+    appearance:none; border:none; cursor:pointer;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12.5px;
+    padding: 10px 6px 9px;
+    clip-path: polygon(8% 0, 92% 0, 100% 100%, 0% 100%);
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    transition: transform .15s ease, background .15s ease, color .15s ease;
+    position: relative;
+    top: 4px;
+  }
+  nav.abas button.ativa{
+    background: var(--surface-2);
+    color: var(--ink);
+    top: 0;
+    transform: translateY(0);
+    z-index: 2;
+  }
+  nav.abas button[data-modulo="central"].ativa{ box-shadow: inset 0 3px 0 var(--accent); }
+  nav.abas button[data-modulo="projetos"].ativa{ box-shadow: inset 0 3px 0 #8B7FC4; }
+  nav.abas button[data-modulo="produtos"].ativa{ box-shadow: inset 0 3px 0 var(--sage); }
+  nav.abas button[data-modulo="biblioteca"].ativa{ box-shadow: inset 0 3px 0 var(--blue); }
+
+  main{ padding: 16px; padding-bottom: 90px; }
+
+  .barra-info{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 12px;
+    font-family: var(--font-mono);
+  }
+  .barra-info .refazer{
+    color: var(--accent);
+    cursor:pointer;
+    font-weight: 600;
+  }
+
+  /* cartão de índice (item da lista) */
+  .cartao{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display:block;
+    text-decoration:none;
+    color: inherit;
+  }
+  .cartao.cor-pastas{ border-left-color: var(--accent); }
+  .cartao.cor-produto{ border-left-color: var(--sage); }
+  .cartao.cor-projeto{ border-left-color: #8B7FC4; }
+  .cartao.cor-doc{ border-left-color: var(--blue); }
+
+  .cartao .titulo{
+    font-weight: 600;
+    font-size: 14.5px;
+    margin-bottom: 3px;
+  }
+  .cartao .caminho{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    word-break: break-word;
+    margin-bottom: 6px;
+  }
+  .cartao .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    padding: 2px 7px;
+    border-radius: 100px;
+    background: var(--surface-2);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+
+  details.grupo{ margin-bottom: 14px; }
+  details.grupo > summary{
+    cursor:pointer;
+    list-style:none;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+    margin-bottom: 10px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+  }
+  details.grupo > summary::-webkit-details-marker{ display:none; }
+  details.grupo > summary .contagem{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  details.arvore-nivel{ margin:0 0 8px; border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:10px; background:rgba(29,34,42,.82); overflow:hidden; }
+  details.arvore-nivel details.arvore-nivel{ margin:8px 0 0; border-left-color:var(--sage); background:rgba(38,44,54,.56); }
+  details.arvore-nivel details.arvore-nivel details.arvore-nivel{ border-left-color:var(--blue); }
+  details.arvore-nivel > summary{ list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 14px; font-weight:600; font-size:14px; }
+  details.arvore-nivel > summary::-webkit-details-marker{ display:none; }
+  details.arvore-titulo{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .arvore-titulo > span:last-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .arvore-seta{ display:inline-block; color:var(--accent); font-size:20px; line-height:12px; transform:rotate(0deg); transition:transform .18s ease; }
+  details.arvore-nivel[open] > summary .arvore-seta{ transform:rotate(90deg); }
+  .arvore-conteudo{ padding:0 12px 12px 28px; }
+  .arvore-acesso{ display:inline-block; color:var(--accent); font-family:var(--font-mono); font-size:11px; margin:0 0 9px; text-decoration:none; }
+  .arvore-acesso:hover{ text-decoration:underline; }
+  .arvore-vazia{ color:var(--muted); font-family:var(--font-mono); font-size:11px; padding:8px 0; }
+  .arvore-documentos{ display:grid; gap:6px; margin:8px 0 12px; }
+  .arvore-documento{ display:flex; align-items:center; gap:9px; min-width:0; padding:9px 10px; border:1px solid rgba(196,151,74,.28); border-radius:8px; background:rgba(8,14,24,.48); color:var(--ink); text-decoration:none; }
+  .arvore-documento:hover{ border-color:var(--accent); background:rgba(196,151,74,.10); }
+  .arvore-documento-icone{ flex:0 0 auto; font-size:16px; }
+  .arvore-documento-info{ min-width:0; flex:1; }
+  .arvore-documento-nome{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:600; }
+  .arvore-documento-meta{ display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .arvore-documento-meta .chip{ font-size:10px; }
+
+  .vazio{
+    text-align:center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 40px 10px;
+    font-family: var(--font-mono);
+  }
+  .carregando{
+    text-align:center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 30px 10px;
+  }
+
+  /* modal simples (reprocessar / config) */
+  .modal-fundo{
+    display:none;
+    position: fixed; inset:0;
+    background: rgba(10,12,15,.7);
+    z-index: 50;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .modal-fundo.mostrar{ display:flex; }
+  .modal{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius) var(--radius) 0 0;
+    width:100%;
+    max-width: 480px;
+    padding: 20px;
+    padding-bottom: 28px;
+  }
+  .modal h3{ font-family: var(--font-display); margin:0 0 14px; font-size:17px; }
+  .opcao-modulo{
+    width:100%;
+    text-align:left;
+    background: var(--surface-2);
+    border:1px solid var(--line);
+    color: var(--ink);
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor:pointer;
+    font-size: 14px;
+  }
+  .status-linha{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+    min-height: 16px;
+  }
+  .fechar-modal{
+    display:block;
+    text-align:center;
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 13px;
+    cursor:pointer;
+  }
+
+  @media (min-width: 720px){
+    main{ max-width: 900px; margin: 0 auto; }
+    header.topo{ padding-left: calc(50% - 450px); padding-right: calc(50% - 450px); }
+    .linha-topo{ padding-top:2px; }
+    .chat-input-bar{ max-width: 900px; margin: 0 auto; }
+  }
+
+  /* ---------- ASSISTENTE DE IA FLUTUANTE ---------- */
+  .btn-ia-flutuante{
+    position:fixed; right:18px; bottom:20px; z-index:45;
+    width:58px; height:58px; border-radius:50%; border:1px solid rgba(227,169,77,.8);
+    background:var(--accent); color:var(--accent-ink); box-shadow:0 10px 28px rgba(0,0,0,.35);
+    font-size:25px; cursor:pointer; transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .btn-ia-flutuante:hover{ transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,.45); }
+  .btn-ia-flutuante:active{ transform:scale(.96); }
+  .painel-ia-flutuante{
+    display:none; position:fixed; right:18px; bottom:88px; z-index:44;
+    width:min(420px, calc(100vw - 28px)); height:min(620px, calc(100vh - 112px));
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    box-shadow:0 18px 50px rgba(0,0,0,.48); overflow:hidden;
+    flex-direction:column;
+  }
+  .painel-ia-flutuante.mostrar{ display:flex; }
+  .cabecalho-ia-flutuante{ display:flex; align-items:center; justify-content:space-between; padding:13px 15px; border-bottom:1px solid var(--line); background:var(--surface-2); }
+  .cabecalho-ia-flutuante strong{ font-family:var(--font-display); font-size:17px; }
+  .fechar-ia{ border:0; background:transparent; color:var(--muted); cursor:pointer; font-size:19px; padding:4px 8px; }
+  .chat-mensagens{ flex:1; min-height:0; overflow-y:auto; }
+  .chat-input-bar{ position:static; display:flex; gap:8px; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:var(--bg); border-top:1px solid var(--line); z-index:auto; }
+  .chat-input-bar input{ flex:1; min-width:0; }
+  @media (max-width:520px){
+    .painel-ia-flutuante{ right:10px; bottom:78px; width:calc(100vw - 20px); height:min(70vh, 560px); }
+    .btn-ia-flutuante{ right:12px; bottom:14px; width:54px; height:54px; }
+  }
+
+  .chat-mensagens{
+    display:flex; flex-direction:column; gap:10px;
+    padding-bottom: 76px;
+  }
+  .bolha{
+    max-width: 85%;
+    padding: 10px 13px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .bolha.usuario{
+    align-self:flex-end;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-bottom-right-radius: 2px;
+  }
+  .bolha.ia{
+    align-self:flex-start;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 2px;
+  }
+  .bolha.ia.carregando{ color: var(--muted); font-style: italic; }
+
+  
+  .btn-enviar-chat{
+    width:44px; height:44px;
+    border-radius:8px; border:none;
+    background: var(--accent); color: var(--accent-ink);
+    font-size:18px; cursor:pointer;
+    flex-shrink:0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== TELA DE LOGIN ===================== -->
+<div id="tela-login">
+  <div class="cartao-login">
+    <div class="selo">Central do Conhecimento EU+</div>
+    <h1>Painel de acesso ao Drive</h1>
+    <p class="sub">Digite a senha para abrir o mapeamento de pastas, produtos, projetos e documentos.</p>
+
+    <div class="msg-erro" id="erro-login"></div>
+
+    <div class="campo">
+      <label for="campo-senha">Senha de acesso</label>
+      <input type="password" id="campo-senha" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+
+        <p class="sub" style="margin-top: 14px; margin-bottom: 0; font-size: 11px;">Conexão oficial configurada para este painel.</p>
+
+
+
+    <button class="btn btn-primario" id="btn-entrar">Entrar</button>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="tela-app">
+  <header class="topo">
+    <div class="linha-topo">
+      <div class="marca">
+        <div class="selo">Central do Conhecimento EU+</div>
+        <h2>Painel do Drive</h2>
+      </div>
+      <div class="acoes-topo">
+        <div class="icone-btn" id="btn-config" title="Configurar conexão">⚙</div>
+        <div class="icone-btn" id="btn-sair" title="Sair">⏻</div>
+      </div>
+    </div>
+    <div class="busca-wrap">
+      <input type="search" id="campo-busca" placeholder="buscar://" />
+    </div>
+    <nav class="abas" aria-label="Áreas da Central">
+      <button class="ativa" data-modulo="central">Central</button>
+      <button data-modulo="projetos">Projetos</button>
+      <button data-modulo="produtos">Produtos</button>
+      <button data-modulo="biblioteca">Biblioteca</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="barra-info">
+      <span id="info-contagem">—</span>
+      <span class="refazer" id="btn-reprocessar">↻ reprocessar</span>
+    </div>
+    <div id="conteudo"></div>
+  </main>
+
+  <button class="btn-ia-flutuante" id="btn-ia-flutuante" title="Abrir assistente IA" aria-label="Abrir assistente IA">✦</button>
+  <aside class="painel-ia-flutuante" id="painel-ia-flutuante" aria-label="Assistente de IA">
+    <div class="cabecalho-ia-flutuante">
+      <strong>Assistente EU+ IA</strong>
+      <button class="fechar-ia" id="fechar-ia-flutuante" aria-label="Fechar assistente">×</button>
+    </div>
+    <div class="chat-mensagens" id="chat-mensagens"></div>
+    <div class="chat-input-bar" id="chat-input-bar">
+      <input type="text" id="campo-chat-ia" placeholder="Pergunte sobre o conteúdo do Drive..." autocomplete="off" />
+      <button class="btn-enviar-chat" id="btn-enviar-ia" aria-label="Enviar pergunta">➤</button>
+    </div>
+  </aside>
+</div>
+
+<!-- ===================== MODAL: REPROCESSAR ===================== -->
+<div class="modal-fundo" id="modal-reprocessar">
+  <div class="modal">
+    <h3>Reprocessar mapeamento</h3>
+    <button class="opcao-modulo" data-modulo="pastas">📁 Todas as pastas do Drive</button>
+    <button class="opcao-modulo" data-modulo="projetosProdutos">🧩 Produtos e Projetos</button>
+    <button class="opcao-modulo" data-modulo="documental">📄 Mapeamento Documental</button>
+    <div class="status-linha" id="status-reprocessar"></div>
+    <div class="fechar-modal" id="fechar-modal-reprocessar">fechar</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- estado / storage ----------
+  const APP_URL = 'https://script.google.com/macros/s/AKfycbzku3SSiKXzRv7Vty_XwSa_-_oz-UwPs0Fnvc7lx8qccYJmQKHDcK_vefN3--SRoRqbHQ/exec';
+  // O módulo IA é um arquivo .gs separado, mas compartilha o mesmo Web App do backend V3.
+  const IA_APP_URL = APP_URL;
+  const LS_TOKEN = 'eudrive_token';
+  const LS_TOKEN_EXP = 'eudrive_token_exp';
+  const LS_IA_TOKEN = 'eudrive_ia_token';
+  const LS_IA_TOKEN_EXP = 'eudrive_ia_token_exp';
+
+  let estado = {
+    url: APP_URL,
+    token: localStorage.getItem(LS_TOKEN) || '',
+    tokenExp: parseInt(localStorage.getItem(LS_TOKEN_EXP) || '0', 10),
+    iaToken: localStorage.getItem(LS_IA_TOKEN) || localStorage.getItem(LS_TOKEN) || '',
+    iaTokenExp: parseInt(localStorage.getItem(LS_IA_TOKEN_EXP) || '0', 10)
+  };
+
+  let cache = { pastas: null, pp: null, doc: null };
+  let abaAtual = 'central';
+  let poller = null;
+
+  // estado do chat com a IA
+  let historicoChatIA = [];
+  let chatIniciado = false;
+  let contadorBolha = 0;
+
+  // ---------- elementos ----------
+  const telaLogin = document.getElementById('tela-login');
+  const telaApp = document.getElementById('tela-app');
+  const campoSenha = document.getElementById('campo-senha');
+  
+  const btnEntrar = document.getElementById('btn-entrar');
+  const erroLogin = document.getElementById('erro-login');
+  const campoBusca = document.getElementById('campo-busca');
+  const conteudo = document.getElementById('conteudo');
+  const infoContagem = document.getElementById('info-contagem');
+  const btnSair = document.getElementById('btn-sair');
+  const btnConfig = document.getElementById('btn-config');
+  const btnReprocessar = document.getElementById('btn-reprocessar');
+  const modalReprocessar = document.getElementById('modal-reprocessar');
+  const fecharModalReprocessar = document.getElementById('fechar-modal-reprocessar');
+  const statusReprocessar = document.getElementById('status-reprocessar');
+  const chatMensagensEl = document.getElementById('chat-mensagens');
+  const campoChatIA = document.getElementById('campo-chat-ia');
+  const btnEnviarIA = document.getElementById('btn-enviar-ia');
+  const btnIAFlutuante = document.getElementById('btn-ia-flutuante');
+  const painelIAFlutuante = document.getElementById('painel-ia-flutuante');
+  const btnFecharIAFlutuante = document.getElementById('fechar-ia-flutuante');
+
+  // ---------- helpers ----------
+  function normalizar(txt){
+    return String(txt == null ? '' : txt)
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function sessaoValida(){
+    return estado.token && estado.tokenExp > Date.now();
+  }
+
+  function appConfigurada(url){
+    return url && url.indexOf('COLE_A_URL_') !== 0;
+  }
+
+  async function chamarEndpoint(url, action, token, payload){
+    if (!appConfigurada(url)){
+      throw new Error('A URL do Apps Script ainda não foi configurada no HTML.');
+    }
+    const query = new URLSearchParams();
+    const corpo = Object.assign({ action: action, token: token || '' }, payload || {});
+    Object.keys(corpo).forEach(chave => {
+      const valor = corpo[chave];
+      query.set(chave, valor != null && typeof valor === 'object' ? JSON.stringify(valor) : String(valor == null ? '' : valor));
+    });
+    const endpoint = url + (url.indexOf('?') >= 0 ? '&' : '?') + query.toString();
+    let resposta;
+    try{
+      resposta = await fetch(endpoint, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store',
+        headers: { 'Accept': 'application/json' }
+      });
+    } catch (erro){
+      throw new Error('Não foi possível acessar o Apps Script por GET. Verifique se o Web App está implantado como “Qualquer pessoa”.');
+    }
+    const texto = await resposta.text();
+    let dados;
+    try { dados = JSON.parse(texto); }
+    catch (erro) { throw new Error('O Apps Script respondeu em formato inválido. Faça o redeploy da versão atual.'); }
+    if (!resposta.ok || dados.ok === false && action === 'health'){
+      throw new Error(dados.erro || ('Resposta HTTP ' + resposta.status));
+    }
+    return dados;
+  }
+
+  function chamarApi(action, payload){
+    return chamarEndpoint(APP_URL, action, estado.token, payload);
+  }
+
+  function chamarIA(action, payload){
+    return chamarEndpoint(IA_APP_URL, action, estado.iaToken, payload);
+  }
+
+  function linhasParaObjetos(dados){
+    if (!dados || !dados.headers) return [];
+    return dados.rows.map(linha => {
+      const obj = {};
+      dados.headers.forEach((h, i) => { obj[h] = linha[i]; });
+      return obj;
+    });
+  }
+
+  // ---------- login ----------
+  async function tentarEntrar(){
+    erroLogin.classList.remove('mostrar');
+    const senha = campoSenha.value.trim();
+
+    if (!senha){
+      erroLogin.textContent = 'Digite a senha de acesso.';
+      erroLogin.classList.add('mostrar');
+      return;
+    }
+
+    btnEntrar.textContent = 'Entrando...';
+    btnEntrar.disabled = true;
+    try{
+      const r = await chamarApi('login', { senha });
+      if (r.ok){
+        estado.token = r.token;
+        estado.tokenExp = Date.now() + (5.5 * 60 * 60 * 1000);
+        localStorage.setItem(LS_TOKEN, estado.token);
+        localStorage.setItem(LS_TOKEN_EXP, String(estado.tokenExp));
+        if (appConfigurada(IA_APP_URL)){
+          try{
+            const ria = await chamarEndpoint(IA_APP_URL, 'login', '', { senha });
+            if (ria.ok){
+              estado.iaToken = ria.token;
+              estado.iaTokenExp = Date.now() + (5.5 * 60 * 60 * 1000);
+              localStorage.setItem(LS_IA_TOKEN, estado.iaToken);
+              localStorage.setItem(LS_IA_TOKEN_EXP, String(estado.iaTokenExp));
+            }
+          } catch(iaErro){
+            console.warn('IA não autenticada:', iaErro.message);
+          }
+        }
+        campoSenha.value = '';
+        abrirApp();
+      } else {
+        erroLogin.textContent = r.erro || 'Não foi possível entrar.';
+        erroLogin.classList.add('mostrar');
+      }
+    } catch(e){
+      erroLogin.textContent = 'Erro de conexão: ' + e.message;
+      erroLogin.classList.add('mostrar');
+    } finally {
+      btnEntrar.textContent = 'Entrar';
+      btnEntrar.disabled = false;
+    }
+  }
+
+  function sair(){
+    fecharIAFlutuante();
+    estado.token = '';
+    estado.tokenExp = 0;
+    estado.iaToken = '';
+    estado.iaTokenExp = 0;
+    localStorage.removeItem(LS_TOKEN);
+    localStorage.removeItem(LS_TOKEN_EXP);
+    localStorage.removeItem(LS_IA_TOKEN);
+    localStorage.removeItem(LS_IA_TOKEN_EXP);
+    cache = { pastas: null, pp: null, doc: null };
+    telaApp.style.display = 'none';
+    telaLogin.style.display = 'flex';
+  }
+
+  function abrirApp(){
+    telaLogin.style.display = 'none';
+    telaApp.style.display = 'block';
+    carregarAba(abaAtual, false);
+  }
+
+  // ---------- carregamento de abas ----------
+  async function carregarAba(modulo, forcar){
+    abaAtual = modulo;
+    document.body.dataset.aba = modulo;
+    document.querySelectorAll('nav.abas button').forEach(b=>{
+      b.classList.toggle('ativa', b.dataset.modulo === modulo);
+    });
+
+    if (modulo === 'ia'){
+      abrirIAFlutuante();
+      return;
+    }
+
+    campoBusca.value = '';
+
+    const chaveCache = modulo === 'central' ? 'pastas' : ((modulo === 'projetos' || modulo === 'produtos') ? 'pp' : 'doc');
+    if (cache[chaveCache] && !forcar){
+      renderizarAba(modulo);
+      return;
+    }
+
+    conteudo.innerHTML = '<div class="carregando">carregando dados...</div>';
+    try{
+      let acao = modulo === 'central' ? 'getPastas' : ((modulo === 'projetos' || modulo === 'produtos') ? 'getProjetosProdutos' : 'getDocumentos');
+      const r = await chamarApi(acao, {});
+      if (!r.ok){
+        if (r.erro && r.erro.indexOf('Sessão') !== -1){ sair(); return; }
+        conteudo.innerHTML = '<div class="vazio">Erro ao carregar: ' + (r.erro||'desconhecido') + '</div>';
+        return;
+      }
+      cache[chaveCache] = linhasParaObjetos(r.dados);
+      renderizarAba(modulo);
+    } catch(e){
+      conteudo.innerHTML = '<div class="vazio">Erro de conexão: ' + e.message + '</div>';
+    }
+  }
+
+  function itensFiltrados(lista, termo){
+    if (!termo) return lista;
+    const t = normalizar(termo);
+    return lista.filter(obj => Object.values(obj).some(v => normalizar(v).indexOf(t) !== -1));
+  }
+
+  function renderizarAba(modulo){
+    const termo = campoBusca.value.trim();
+    if (modulo === 'central') renderPastas(itensFiltrados(cache.pastas || [], termo));
+    if (modulo === 'projetos') renderAreaHierarquica((cache.pp || []).filter(x => normalizar(x['Categoria']).indexOf('projeto') === 0).filter(x => itensFiltrados([x], termo).length), 'Projetos', 'pastas');
+    if (modulo === 'produtos') renderAreaHierarquica((cache.pp || []).filter(x => normalizar(x['Categoria']).indexOf('produto') === 0).filter(x => itensFiltrados([x], termo).length), 'Produtos', 'pastas');
+    if (modulo === 'biblioteca') renderAreaHierarquica((cache.doc || []).filter(x => normalizar(x['Categoria']) === 'biblioteca').filter(x => itensFiltrados([x], termo).length), 'Biblioteca', 'documentos');
+  }
+
+  function renderPastas(lista){
+    infoContagem.textContent = lista.length + ' pasta(s)';
+    if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhuma pasta encontrada.</div>'; return; }
+    const arvore = construirArvorePastas(lista);
+    conteudo.innerHTML = renderNosPastas(arvore, 0);
+  }
+
+  function arquivosDoItem(item){
+    const bruto = item && (item['Arquivos'] || item['Files'] || item['arquivos']);
+    if (!bruto) return [];
+    if (Array.isArray(bruto)) return bruto;
+    try {
+      const lido = JSON.parse(String(bruto));
+      return Array.isArray(lido) ? lido : [];
+    } catch(e){ return []; }
+  }
+
+  function iconeDocumento(mime){
+    const tipo = normalizar(mime || '');
+    if (tipo.indexOf('spreadsheet') !== -1 || tipo.indexOf('excel') !== -1) return '📊';
+    if (tipo.indexOf('document') !== -1 || tipo.indexOf('word') !== -1) return '📄';
+    if (tipo.indexOf('presentation') !== -1 || tipo.indexOf('powerpoint') !== -1) return '📽️';
+    if (tipo.indexOf('pdf') !== -1) return '📕';
+    if (tipo.indexOf('script') !== -1 || tipo.indexOf('javascript') !== -1) return '🧩';
+    return '📎';
+  }
+
+  function renderDocumentosDaPasta(documentos){
+    if (!documentos || !documentos.length) return '';
+    return '<div class="arvore-documentos" aria-label="Documentos desta pasta">' + documentos.map(doc => `
+      <a class="arvore-documento" href="${doc.url || doc['URL'] || '#'}" target="_blank" rel="noopener">
+        <span class="arvore-documento-icone">${iconeDocumento(doc.mimeType || doc['Tipo'])}</span>
+        <span class="arvore-documento-info">
+          <span class="arvore-documento-nome">${escapar(doc.name || doc['Nome'] || 'Documento sem nome')}</span>
+          <span class="arvore-documento-meta"><span class="chip">${escapar(doc.mimeType || doc['Tipo'] || 'arquivo')}</span>${doc.lastUpdated || doc['Última Modificação'] ? '<span class="chip">'+escapar(doc.lastUpdated || doc['Última Modificação'])+'</span>' : ''}</span>
+        </span>
+      </a>`).join('') + '</div>';
+  }
+
+  function construirArvorePastas(lista){
+    const porId = {};
+    const raizes = [];
+    lista.forEach((item, index) => {
+      const id = item['ID'] || item['ID da Pasta'] || item['Folder ID'] || item['id'] || ('linha-' + index);
+      porId[id] = { item, id, filhos: [], documentos: arquivosDoItem(item) };
+    });
+    Object.values(porId).forEach(node => {
+      const item = node.item;
+      const pai = item['ID da Pasta Pai'] || item['Parent ID'] || item['parentId'] || item['ID Pai'] || '';
+      if (pai && porId[pai] && pai !== node.id) porId[pai].filhos.push(node);
+      else raizes.push(node);
+    });
+    const ordenar = nodes => {
+      nodes.sort((a,b) => normalizar(a.item['Nome']).localeCompare(normalizar(b.item['Nome']), 'pt-BR'));
+      nodes.forEach(n => ordenar(n.filhos));
+      return nodes;
+    };
+    return ordenar(raizes);
+  }
+
+  function renderNosPastas(nodes, nivel){
+    return nodes.map(node => {
+      const p = node.item;
+      const nome = p['Nome'] || 'Pasta sem nome';
+      const documentos = renderDocumentosDaPasta(node.documentos);
+      const filhos = node.filhos.length ? renderNosPastas(node.filhos, nivel + 1) : '';
+      const total = node.filhos.length + node.documentos.length;
+      const vazio = total ? '' : '<div class="arvore-vazia">Nenhum documento ou subpasta neste nível.</div>';
+      const aberto = nivel === 0 ? ' open' : '';
+      return `
+        <details class="arvore-nivel"${aberto}>
+          <summary>
+            <span class="arvore-titulo"><span class="arvore-seta">›</span><span>📁</span>${escapar(nome)}</span>
+            <span class="contagem">${total} ${total === 1 ? 'item' : 'itens'}</span>
+          </summary>
+          <div class="arvore-conteudo">
+            <a class="arvore-acesso" href="${p['URL'] || '#'}" target="_blank" rel="noopener">Abrir esta pasta no Drive ↗</a>
+            ${documentos}${filhos}${vazio}
+          </div>
+        </details>`;
+    }).join('');
+  }
+
+  function renderAreaHierarquica(lista, nomeArea, tipo){
+    infoContagem.textContent = lista.length + (tipo === 'documentos' ? ' arquivo(s)' : ' pasta(s)');
+    if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhum item encontrado em ' + escapar(nomeArea) + '.</div>'; return; }
+    const arvore = construirArvoreArea(lista, nomeArea, tipo);
+    conteudo.innerHTML = renderNosArea(arvore, 0, tipo);
+  }
+
+  function construirArvoreArea(lista, nomeArea, tipo){
+    const raiz = { nome: nomeArea, url: '', filhos: [], documentos: [] };
+    const porCaminho = { '': raiz };
+    lista.forEach((item, index) => {
+      let caminho = String(item['Caminho Completo'] || item['Pasta (Nome)'] || '').trim();
+      const partes = caminho.split(' / ').filter(Boolean);
+      if (partes.length && normalizar(partes[0]) === normalizar(nomeArea)) partes.shift();
+      let atual = raiz;
+      let acumulado = '';
+      if (tipo === 'documentos'){
+        const pastaNome = String(item['Pasta (Nome)'] || '').trim();
+        const pastaPartes = partes.length ? partes : (pastaNome && normalizar(pastaNome) !== normalizar(nomeArea) ? [pastaNome] : []);
+        pastaPartes.forEach(parte => {
+          acumulado += '/' + parte;
+          if (!porCaminho[acumulado]) porCaminho[acumulado] = { nome: parte, url: '', filhos: [], documentos: [] };
+          if (atual.filhos.indexOf(porCaminho[acumulado]) === -1) atual.filhos.push(porCaminho[acumulado]);
+          atual = porCaminho[acumulado];
+        });
+        atual.documentos.push(item);
+      } else {
+        partes.forEach(parte => {
+          acumulado += '/' + parte;
+          if (!porCaminho[acumulado]) porCaminho[acumulado] = { nome: parte, url: '', filhos: [], documentos: [], item: null };
+          if (atual.filhos.indexOf(porCaminho[acumulado]) === -1) atual.filhos.push(porCaminho[acumulado]);
+          atual = porCaminho[acumulado];
+        });
+        atual.item = item;
+        atual.url = item['URL'] || '';
+        atual.documentos = (atual.documentos || []).concat(arquivosDoItem(item));
+      }
+    });
+    const ordenar = node => {
+      node.filhos.sort((a,b) => normalizar(a.nome).localeCompare(normalizar(b.nome), 'pt-BR'));
+      node.documentos.sort((a,b) => normalizar(a['Nome']).localeCompare(normalizar(b['Nome']), 'pt-BR'));
+      node.filhos.forEach(ordenar);
+      return node;
+    };
+    return ordenar(raiz);
+  }
+
+  function renderNosArea(node, nivel, tipo){
+    const total = node.filhos.length + node.documentos.length;
+    const aberto = nivel === 0 ? ' open' : '';
+    const conteudoDocs = node.documentos.map(doc => `
+      <a class="cartao cor-doc" href="${doc['URL'] || '#'}" target="_blank" rel="noopener">
+        <div class="titulo">${escapar(doc['Nome'])}</div>
+        <div class="caminho">${escapar(doc['Caminho Completo'] || doc['Pasta (Nome)'])}</div>
+        <div class="chips"><span class="chip">${escapar(doc['Tipo'])}</span><span class="chip">${escapar(doc['Última Modificação'])}</span></div>
+      </a>`).join('');
+    const filhos = node.filhos.map(filho => renderNosArea(filho, nivel + 1, tipo)).join('');
+    const acesso = node.url ? '<a class="arvore-acesso" href="' + node.url + '" target="_blank" rel="noopener">Abrir esta pasta no Drive ↗</a>' : '';
+    return `
+      <details class="arvore-nivel"${aberto}>
+        <summary><span class="arvore-titulo"><span class="arvore-seta">›</span><span>📁</span>${escapar(node.nome)}</span><span class="contagem">${total} ${total === 1 ? 'item' : 'itens'}</span></summary>
+        <div class="arvore-conteudo">${acesso}${conteudoDocs}${filhos || (!conteudoDocs ? '<div class="arvore-vazia">Nenhum item neste nível.</div>' : '')}</div>
+      </details>`;
+  }
+
+  function renderProjetosProdutos(lista){
+    infoContagem.textContent = lista.length + ' item(ns)';
+    if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhum item encontrado.</div>'; return; }
+
+    const grupos = {};
+    lista.forEach(item => {
+      const chave = item['Categoria'] + ' | ' + item['Produto/Projeto (Raiz)'];
+      if (!grupos[chave]) grupos[chave] = { categoria: item['Categoria'], raiz: item['Produto/Projeto (Raiz)'], itens: [] };
+      grupos[chave].itens.push(item);
+    });
+
+    conteudo.innerHTML = Object.values(grupos).map(g => `
+      <details class="grupo" open>
+        <summary>
+          <span>${g.categoria === 'Produto' ? '🧩' : '📌'} ${escapar(g.raiz)}</span>
+          <span class="contagem">${g.itens.length}</span>
+        </summary>
+        ${g.itens.map(it => `
+          <a class="cartao ${g.categoria === 'Produto' ? 'cor-produto' : 'cor-projeto'}" href="${it['URL']||'#'}" target="_blank" rel="noopener">
+            <div class="titulo">${escapar(it['Nome'])}</div>
+            <div class="caminho">${escapar(it['Caminho Completo'])}</div>
+            <div class="chips">
+              <span class="chip">${escapar(g.categoria)}</span>
+              <span class="chip">${escapar(it['Última Modificação'])}</span>
+            </div>
+          </a>
+        `).join('')}
+      </details>
+    `).join('');
+  }
+
+  function renderDocumentos(lista){
+    infoContagem.textContent = lista.length + ' arquivo(s)';
+    if (!lista.length){ conteudo.innerHTML = '<div class="vazio">Nenhum documento encontrado.</div>'; return; }
+
+    const grupos = {};
+    lista.forEach(item => {
+      const chave = item['Categoria'];
+      if (!grupos[chave]) grupos[chave] = [];
+      grupos[chave].push(item);
+    });
+
+    conteudo.innerHTML = Object.keys(grupos).map(cat => `
+      <details class="grupo" open>
+        <summary>
+          <span>📁 ${escapar(cat)}</span>
+          <span class="contagem">${grupos[cat].length}</span>
+        </summary>
+        ${grupos[cat].map(doc => `
+          <a class="cartao cor-doc" href="${doc['URL']||'#'}" target="_blank" rel="noopener">
+            <div class="titulo">${escapar(doc['Nome'])}</div>
+            <div class="caminho">${escapar(doc['Pasta (Nome)'])}</div>
+            <div class="chips">
+              <span class="chip">${escapar(doc['Tipo'])}</span>
+              ${doc['Subcategoria'] ? '<span class="chip">'+escapar(doc['Subcategoria'])+'</span>' : ''}
+              <span class="chip">${escapar(doc['Tamanho (MB)'])} MB</span>
+              <span class="chip">${escapar(doc['Última Modificação'])}</span>
+            </div>
+          </a>
+        `).join('')}
+      </details>
+    `).join('');
+  }
+
+  function escapar(txt){
+    const d = document.createElement('div');
+    d.textContent = txt == null ? '' : String(txt);
+    return d.innerHTML;
+  }
+
+  // ---------- assistente de IA ----------
+  function abrirIAFlutuante(){
+    painelIAFlutuante.classList.add('mostrar');
+    if (!chatIniciado){
+      adicionarBolha('ia', 'Olá! Sou o assistente da Central do Conhecimento EU+. Posso ler documentos autorizados, resumir conteúdos e registrar aprendizados. Pergunte sobre qualquer área do Drive.');
+      chatIniciado = true;
+    }
+    setTimeout(() => campoChatIA.focus(), 120);
+  }
+
+  function fecharIAFlutuante(){
+    painelIAFlutuante.classList.remove('mostrar');
+  }
+
+  function adicionarBolha(papel, texto, carregando){
+    contadorBolha++;
+    const id = 'bolha-' + contadorBolha;
+    const div = document.createElement('div');
+    div.className = 'bolha ' + papel + (carregando ? ' carregando' : '');
+    div.id = id;
+    div.textContent = texto;
+    chatMensagensEl.appendChild(div);
+    chatMensagensEl.scrollTop = chatMensagensEl.scrollHeight;
+    return id;
+  }
+
+  function removerBolha(id){
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  async function enviarMensagemIA(){
+    const texto = campoChatIA.value.trim();
+    if (!texto) return;
+
+    adicionarBolha('usuario', texto);
+    historicoChatIA.push({ papel: 'usuario', texto });
+    campoChatIA.value = '';
+
+    const idCarregando = adicionarBolha('ia', 'digitando...', true);
+    try{
+      const r = await chamarIA('perguntarIA', { pergunta: texto, historico: historicoChatIA.slice(-10) });
+      removerBolha(idCarregando);
+      if (r.ok){
+        adicionarBolha('ia', r.resposta);
+        historicoChatIA.push({ papel: 'ia', texto: r.resposta });
+      } else {
+        if (r.erro && r.erro.indexOf('Sessão') !== -1){ sair(); return; }
+        adicionarBolha('ia', 'Erro: ' + r.erro);
+      }
+    } catch(e){
+      removerBolha(idCarregando);
+      adicionarBolha('ia', 'Erro de conexão: ' + e.message);
+    }
+  }
+
+  // ---------- reprocessar ----------
+  function abrirModalReprocessar(){
+    modalReprocessar.classList.add('mostrar');
+    statusReprocessar.textContent = '';
+  }
+  function fecharModal(){
+    modalReprocessar.classList.remove('mostrar');
+    if (poller) clearInterval(poller);
+  }
+
+  async function iniciarReprocessamento(modulo){
+    statusReprocessar.textContent = 'Iniciando...';
+    try{
+      const r = await chamarApi('remapear', { modulo });
+      if (!r.ok){ statusReprocessar.textContent = 'Erro: ' + r.erro; return; }
+      statusReprocessar.textContent = r.mensagem;
+      acompanharStatus(modulo);
+    } catch(e){
+      statusReprocessar.textContent = 'Erro de conexão: ' + e.message;
+    }
+  }
+
+  function acompanharStatus(modulo){
+    if (poller) clearInterval(poller);
+    poller = setInterval(async () => {
+      try{
+        const r = await chamarApi('status', { modulo });
+        if (!r.ok) return;
+        statusReprocessar.textContent = 'Status: ' + r.status + ' · mapeados: ' + r.total + ' · na fila: ' + r.restante;
+        if (r.status === 'concluído'){
+          clearInterval(poller);
+          const chaveCache = modulo === 'pastas' ? 'pastas' : (modulo === 'projetosProdutos' ? 'pp' : 'doc');
+          cache[chaveCache] = null; // força recarregar na próxima vez que abrir a aba
+        }
+      } catch(e){ /* silencioso, tenta de novo no próximo ciclo */ }
+    }, 4000);
+  }
+
+  // ---------- eventos ----------
+  btnEntrar.addEventListener('click', tentarEntrar);
+  campoSenha.addEventListener('keydown', e => { if (e.key === 'Enter') tentarEntrar(); });
+
+  btnSair.addEventListener('click', sair);
+  btnConfig.addEventListener('click', () => {
+    alert('A conexão deste painel já está configurada para o Apps Script oficial.');
+  });
+
+  document.querySelectorAll('nav.abas button').forEach(b => {
+    b.addEventListener('click', () => carregarAba(b.dataset.modulo, false));
+  });
+
+  campoBusca.addEventListener('input', () => renderizarAba(abaAtual));
+
+  btnIAFlutuante.addEventListener('click', abrirIAFlutuante);
+  btnFecharIAFlutuante.addEventListener('click', fecharIAFlutuante);
+  btnEnviarIA.addEventListener('click', enviarMensagemIA);
+  campoChatIA.addEventListener('keydown', e => { if (e.key === 'Enter') enviarMensagemIA(); });
+
+  btnReprocessar.addEventListener('click', abrirModalReprocessar);
+  fecharModalReprocessar.addEventListener('click', fecharModal);
+  document.querySelectorAll('.opcao-modulo').forEach(b => {
+    b.addEventListener('click', () => iniciarReprocessamento(b.dataset.modulo));
+  });
+
+  // ---------- inicialização ----------
+  if (sessaoValida()){
+    abrirApp();
+  }
+})();
+</script>
+</body>
+</html>
