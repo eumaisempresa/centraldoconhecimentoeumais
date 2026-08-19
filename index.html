@@ -34,7 +34,9 @@
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
   }
-  button, input{ font-family: inherit; }
+  button, input, select, textarea{ font-family: inherit; }
+  select, textarea{ width:100%; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:11px 12px; font-size:14px; outline:none; }
+  textarea{ resize:vertical; line-height:1.45; }
   ::selection{ background: var(--accent); color: var(--accent-ink); }
   a{ color: inherit; }
 
@@ -215,6 +217,33 @@
     cursor:pointer;
     font-weight: 600;
   }
+  .barra-acoes{ display:flex; align-items:center; gap:6px; }
+  .mini-acao{ border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:6px; padding:6px 8px; font-family:var(--font-mono); font-size:10px; cursor:pointer; white-space:nowrap; }
+  .mini-acao:hover{ border-color:var(--accent); color:var(--accent); }
+  .modal-ajuda{ color:var(--muted); font-size:12px; line-height:1.45; margin:0 0 14px; }
+  .modal-titulo-linha{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .modal-titulo-linha h3{ margin-bottom:0; }
+  .modal-agenda{ max-height:90vh; overflow:auto; }
+  .lista-revisoes{ display:grid; gap:8px; max-height:300px; overflow:auto; margin:12px 0; }
+  .revisao-card{ border:1px solid var(--line); border-left:3px solid var(--sage); background:var(--surface-2); border-radius:8px; padding:10px; }
+  .revisao-card.vencida{ border-left-color:var(--danger); }
+  .revisao-card.concluida{ border-left-color:var(--muted); opacity:.75; }
+  .revisao-topo{ display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+  .revisao-nome{ font-weight:600; font-size:13px; word-break:break-word; }
+  .revisao-data{ font-family:var(--font-mono); font-size:10px; color:var(--accent); white-space:nowrap; }
+  .revisao-meta{ display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+  .revisao-acoes{ display:flex; gap:6px; margin-top:9px; }
+  .revisao-acoes button{ border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:6px; padding:5px 7px; font-family:var(--font-mono); font-size:10px; cursor:pointer; }
+  .revisao-acoes button:hover{ color:var(--accent); border-color:var(--accent); }
+  .form-revisao{ display:none; border-top:1px solid var(--line); padding-top:13px; }
+  .form-revisao.mostrar{ display:block; }
+  .agenda-form-titulo{ font-family:var(--font-display); font-size:16px; margin-bottom:12px; }
+  .agenda-form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  @media (max-width:520px){
+    .barra-acoes{ gap:3px; }
+    .mini-acao{ padding:7px 5px; font-size:9px; }
+    .agenda-form-grid{ grid-template-columns:1fr; }
+  }
 
   /* cartão de índice (item da lista) */
   .cartao{
@@ -305,11 +334,14 @@
   .btn-apontar-ia{ border:1px solid rgba(196,151,74,.58); background:rgba(196,151,74,.10); color:var(--accent); border-radius:6px; padding:6px 8px; font-family:var(--font-mono); font-size:10px; cursor:pointer; white-space:nowrap; }
   .btn-apontar-ia:hover{ background:var(--accent); color:var(--accent-ink); }
   .btn-apontar-ia:active{ transform:scale(.97); }
+  .btn-agendar-revisao{ border:1px solid rgba(110,156,135,.58); background:rgba(110,156,135,.10); color:var(--sage); border-radius:6px; padding:6px 8px; font-family:var(--font-mono); font-size:10px; cursor:pointer; white-space:nowrap; }
+  .btn-agendar-revisao:hover{ background:var(--sage); color:#102018; }
+  .btn-agendar-revisao:active{ transform:scale(.97); }
   .acoes-cabecalho-ia{ display:flex; align-items:center; gap:6px; }
   .limpar-contexto-ia{ border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:6px; padding:5px 7px; font-family:var(--font-mono); font-size:10px; cursor:pointer; }
   .contexto-ia-bar{ padding:7px 12px; background:rgba(196,151,74,.08); border-bottom:1px solid var(--line); color:var(--accent); font-family:var(--font-mono); font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   @media (max-width:520px){
-    .btn-apontar-ia{ padding:8px 7px; }
+    .btn-apontar-ia, .btn-agendar-revisao{ padding:8px 7px; }
     .arvore-documento{ align-items:flex-start; }
     .arvore-acoes{ padding-top:1px; }
   }
@@ -499,7 +531,11 @@
   <main>
     <div class="barra-info">
       <span id="info-contagem">—</span>
-      <span class="refazer" id="btn-reprocessar">↻ atualizar mapeamento</span>
+      <span class="barra-acoes">
+        <button class="mini-acao" id="btn-criar-item" type="button">＋ criar</button>
+        <button class="mini-acao" id="btn-agenda" type="button">▣ agenda</button>
+        <button class="mini-acao refazer" id="btn-reprocessar" type="button">↻ atualizar mapeamento</button>
+      </span>
     </div>
     <div id="conteudo"></div>
   </main>
@@ -535,6 +571,47 @@
   </div>
 </div>
 
+<div class="modal-fundo" id="modal-criar-item">
+  <div class="modal">
+    <h3>＋ Criar no Drive</h3>
+    <p class="modal-ajuda" id="destino-criacao">Destino: área atual</p>
+    <div class="campo"><label for="campo-nome-item">Nome</label><input type="text" id="campo-nome-item" placeholder="Ex.: procedimento de revisão" /></div>
+    <div class="campo"><label for="campo-tipo-item">Tipo</label><select id="campo-tipo-item">
+      <option value="pasta">Pasta</option>
+      <option value="documento">Google Docs</option>
+      <option value="planilha">Google Sheets</option>
+      <option value="apresentacao">Google Slides</option>
+      <option value="texto">Arquivo de texto (.txt)</option>
+      <option value="markdown">Markdown (.md)</option>
+    </select></div>
+    <div class="campo" id="campo-conteudo-item-wrap"><label for="campo-conteudo-item">Conteúdo inicial (opcional)</label><textarea id="campo-conteudo-item" rows="4" placeholder="Conteúdo inicial para arquivos de texto..."></textarea></div>
+    <div class="status-linha" id="status-criar-item"></div>
+    <button class="btn btn-primario" id="confirmar-criacao" type="button">Criar arquivo</button>
+    <div class="fechar-modal" id="fechar-modal-criar">cancelar</div>
+  </div>
+</div>
+
+<div class="modal-fundo" id="modal-agenda">
+  <div class="modal modal-agenda">
+    <div class="modal-titulo-linha"><h3>▣ Agenda de revisões</h3><button class="mini-acao" id="btn-nova-revisao" type="button">＋ nova</button></div>
+    <p class="modal-ajuda">As revisões ficam salvas na aba <strong>7.20.11 Agenda Revisões</strong> da planilha do Drive.</p>
+    <div id="lista-revisoes" class="lista-revisoes"><div class="carregando">carregando agenda...</div></div>
+    <div class="form-revisao" id="form-revisao">
+      <div class="agenda-form-titulo" id="titulo-form-revisao">Programar revisão</div>
+      <input type="hidden" id="campo-revisao-id" />
+      <div class="campo"><label for="campo-revisao-fileid">File ID</label><input type="text" id="campo-revisao-fileid" placeholder="ID do arquivo" /></div>
+      <div class="campo"><label for="campo-revisao-arquivo">Arquivo</label><input type="text" id="campo-revisao-arquivo" placeholder="Nome do arquivo" /></div>
+      <div class="agenda-form-grid"><div class="campo"><label for="campo-revisao-data">Data da revisão</label><input type="date" id="campo-revisao-data" /></div><div class="campo"><label for="campo-revisao-periodicidade">Repetir a cada (dias)</label><input type="number" id="campo-revisao-periodicidade" min="0" step="1" placeholder="0 = única" /></div></div>
+      <div class="campo"><label for="campo-revisao-responsavel">Responsável</label><input type="text" id="campo-revisao-responsavel" placeholder="Nome do responsável" /></div>
+      <div class="campo"><label for="campo-revisao-observacoes">Observações</label><textarea id="campo-revisao-observacoes" rows="3" placeholder="O que deve ser conferido..."></textarea></div>
+      <div class="status-linha" id="status-revisao"></div>
+      <button class="btn btn-primario" id="salvar-revisao" type="button">Programar revisão</button>
+      <div class="fechar-modal" id="cancelar-form-revisao">cancelar edição</div>
+    </div>
+    <div class="fechar-modal" id="fechar-modal-agenda">fechar agenda</div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -559,6 +636,8 @@
   let cache = { pastas: null, pp: null, doc: null };
   let abaAtual = 'central';
   let poller = null;
+  let pastaCriacaoAtual = '';
+  let revisoesCache = [];
 
   // estado do chat com a IA
   let historicoChatIA = [];
@@ -582,6 +661,32 @@
   const modalReprocessar = document.getElementById('modal-reprocessar');
   const fecharModalReprocessar = document.getElementById('fechar-modal-reprocessar');
   const statusReprocessar = document.getElementById('status-reprocessar');
+  const btnCriarItem = document.getElementById('btn-criar-item');
+  const btnAgenda = document.getElementById('btn-agenda');
+  const modalCriarItem = document.getElementById('modal-criar-item');
+  const fecharModalCriar = document.getElementById('fechar-modal-criar');
+  const confirmarCriacao = document.getElementById('confirmar-criacao');
+  const campoNomeItem = document.getElementById('campo-nome-item');
+  const campoTipoItem = document.getElementById('campo-tipo-item');
+  const campoConteudoItem = document.getElementById('campo-conteudo-item');
+  const destinoCriacao = document.getElementById('destino-criacao');
+  const statusCriarItem = document.getElementById('status-criar-item');
+  const modalAgenda = document.getElementById('modal-agenda');
+  const fecharModalAgenda = document.getElementById('fechar-modal-agenda');
+  const btnNovaRevisao = document.getElementById('btn-nova-revisao');
+  const listaRevisoesEl = document.getElementById('lista-revisoes');
+  const formRevisao = document.getElementById('form-revisao');
+  const tituloFormRevisao = document.getElementById('titulo-form-revisao');
+  const campoRevisaoId = document.getElementById('campo-revisao-id');
+  const campoRevisaoFileId = document.getElementById('campo-revisao-fileid');
+  const campoRevisaoArquivo = document.getElementById('campo-revisao-arquivo');
+  const campoRevisaoData = document.getElementById('campo-revisao-data');
+  const campoRevisaoPeriodicidade = document.getElementById('campo-revisao-periodicidade');
+  const campoRevisaoResponsavel = document.getElementById('campo-revisao-responsavel');
+  const campoRevisaoObservacoes = document.getElementById('campo-revisao-observacoes');
+  const statusRevisao = document.getElementById('status-revisao');
+  const salvarRevisao = document.getElementById('salvar-revisao');
+  const cancelarFormRevisao = document.getElementById('cancelar-form-revisao');
   const chatMensagensEl = document.getElementById('chat-mensagens');
   const campoChatIA = document.getElementById('campo-chat-ia');
   const btnEnviarIA = document.getElementById('btn-enviar-ia');
@@ -849,6 +954,11 @@
     if (!id) return '';
     return '<button type="button" class="btn-apontar-ia" data-ia-tipo="' + escapar(tipo) + '" data-ia-id="' + escapar(id) + '" data-ia-nome="' + escapar(nome || '') + '" title="Enviar este item para a IA">✦ IA</button>';
   }
+  function botaoAgendarRevisao(doc){
+    const id = documentoId(doc);
+    if (!id) return '';
+    return '<button type="button" class="btn-agendar-revisao" data-revisao-file-id="' + escapar(id) + '" data-revisao-nome="' + escapar(documentoNome(doc)) + '" title="Programar revisão deste arquivo">⏱ revisão</button>';
+  }
   function renderDocumentosDaPasta(documentos){
     if (!documentos || !documentos.length) return '';
     return '<div class="arvore-documentos" aria-label="Documentos desta pasta">' + documentos.map(doc => `
@@ -860,7 +970,7 @@
             <span class="arvore-documento-meta"><span class="chip">${escapar(documentoTipo(doc))}</span>${documentoData(doc) ? '<span class="chip">'+escapar(documentoData(doc))+'</span>' : ''}</span>
           </span>
         </a>
-        <span class="arvore-acoes">${botaoApontarIA('documento', documentoId(doc), documentoNome(doc))}</span>
+        <span class="arvore-acoes">${botaoApontarIA('documento', documentoId(doc), documentoNome(doc))}${botaoAgendarRevisao(doc)}</span>
       </div>`).join('') + '</div>';
   }
 
@@ -1049,6 +1159,142 @@
     return d.innerHTML;
   }
 
+  // ---------- criação e agenda ----------
+  function dataHojeFrontend(){
+    const d = new Date();
+    return d.toISOString().slice(0, 10);
+  }
+  function dataAmanhaFrontend(){
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+  function abrirModalCriacao(parentId, parentName){
+    const areaIds = { central: IDS_AREAS.Central, projetos: IDS_AREAS.Projetos, produtos: IDS_AREAS.Produtos, biblioteca: IDS_AREAS.Biblioteca };
+    pastaCriacaoAtual = parentId || areaIds[abaAtual] || IDS_AREAS.Central;
+    destinoCriacao.textContent = 'Destino: ' + (parentName || abaAtual) + ' · os dados serão criados no Drive';
+    campoNomeItem.value = '';
+    campoConteudoItem.value = '';
+    campoTipoItem.value = 'pasta';
+    campoConteudoItem.parentElement.style.display = 'none';
+    statusCriarItem.textContent = '';
+    modalCriarItem.classList.add('mostrar');
+    setTimeout(() => campoNomeItem.focus(), 100);
+  }
+  function fecharModalCriacao(){ modalCriarItem.classList.remove('mostrar'); }
+  async function criarItemFrontend(){
+    const nome = campoNomeItem.value.trim();
+    if (!nome){ statusCriarItem.textContent = 'Informe um nome.'; return; }
+    confirmarCriacao.disabled = true;
+    statusCriarItem.textContent = 'Criando no Drive...';
+    try{
+      const r = await chamarApi('criarItem', { name: nome, parentId: pastaCriacaoAtual, type: campoTipoItem.value, content: campoConteudoItem.value });
+      if (!r.ok) throw new Error(r.erro || 'Não foi possível criar o item.');
+      statusCriarItem.textContent = 'Criado: ' + (r.dados && r.dados.nome ? r.dados.nome : nome);
+      cache = { pastas: null, pp: null, doc: null };
+      setTimeout(() => { fecharModalCriacao(); carregarAba(abaAtual, true); }, 600);
+    } catch(e){ statusCriarItem.textContent = 'Erro: ' + e.message; }
+    finally { confirmarCriacao.disabled = false; }
+  }
+  function abrirModalAgenda(){
+    modalAgenda.classList.add('mostrar');
+    carregarAgenda();
+  }
+  function fecharAgenda(){
+    modalAgenda.classList.remove('mostrar');
+    formRevisao.classList.remove('mostrar');
+  }
+  function limparFormularioRevisao(){
+    campoRevisaoId.value = '';
+    campoRevisaoFileId.value = '';
+    campoRevisaoArquivo.value = '';
+    campoRevisaoData.value = dataAmanhaFrontend();
+    campoRevisaoPeriodicidade.value = '';
+    campoRevisaoResponsavel.value = '';
+    campoRevisaoObservacoes.value = '';
+    campoRevisaoFileId.disabled = false;
+    campoRevisaoArquivo.disabled = false;
+    tituloFormRevisao.textContent = 'Programar revisão';
+    salvarRevisao.textContent = 'Programar revisão';
+    statusRevisao.textContent = '';
+  }
+  function abrirFormularioRevisao(item){
+    limparFormularioRevisao();
+    if (item){
+      campoRevisaoId.value = item['ID da Revisão'] || '';
+      campoRevisaoFileId.value = item['File ID'] || '';
+      campoRevisaoArquivo.value = item['Arquivo'] || '';
+      campoRevisaoData.value = String(item['Data da Revisão'] || '').slice(0, 10);
+      campoRevisaoPeriodicidade.value = item['Periodicidade (dias)'] || '';
+      campoRevisaoResponsavel.value = item['Responsável'] || '';
+      campoRevisaoObservacoes.value = item['Observações'] || '';
+      campoRevisaoFileId.disabled = true;
+      campoRevisaoArquivo.disabled = true;
+      tituloFormRevisao.textContent = 'Editar revisão';
+      salvarRevisao.textContent = 'Salvar alterações';
+    }
+    formRevisao.classList.add('mostrar');
+    setTimeout(() => (item ? campoRevisaoData : campoRevisaoFileId).focus(), 80);
+  }
+  function abrirAgendaParaDocumento(fileId, nome){
+    modalAgenda.classList.add('mostrar');
+    abrirFormularioRevisao({ 'File ID': fileId, 'Arquivo': nome, 'Data da Revisão': dataAmanhaFrontend() });
+    carregarAgenda();
+  }
+  function renderListaRevisoes(lista){
+    if (!lista.length){ listaRevisoesEl.innerHTML = '<div class="vazio">Nenhuma revisão programada.</div>'; return; }
+    listaRevisoesEl.innerHTML = lista.map(item => {
+      const status = normalizar(item['Status'] || 'agendada');
+      const classStatus = status.indexOf('venc') >= 0 ? ' vencida' : (status.indexOf('conclu') >= 0 ? ' concluida' : '');
+      const periodicidade = item['Periodicidade (dias)'] && Number(item['Periodicidade (dias)']) > 0 ? 'a cada ' + item['Periodicidade (dias)'] + ' dias' : 'única';
+      return `<article class="revisao-card${classStatus}">
+        <div class="revisao-topo"><div class="revisao-nome">${escapar(item['Arquivo'] || 'Arquivo sem nome')}</div><div class="revisao-data">${escapar(String(item['Data da Revisão'] || '').slice(0,10))}</div></div>
+        <div class="revisao-meta"><span class="chip">${escapar(item['Status'] || 'agendada')}</span><span class="chip">${escapar(periodicidade)}</span>${item['Responsável'] ? '<span class="chip">'+escapar(item['Responsável'])+'</span>' : ''}</div>
+        ${item['Observações'] ? '<div class="caminho">'+escapar(item['Observações'])+'</div>' : ''}
+        <div class="revisao-acoes"><button type="button" data-agenda-acao="concluir" data-revisao-id="${escapar(item['ID da Revisão'])}">concluir</button><button type="button" data-agenda-acao="editar" data-revisao-id="${escapar(item['ID da Revisão'])}">editar</button><button type="button" data-agenda-acao="excluir" data-revisao-id="${escapar(item['ID da Revisão'])}">excluir</button></div>
+      </article>`;
+    }).join('');
+  }
+  async function carregarAgenda(){
+    listaRevisoesEl.innerHTML = '<div class="carregando">carregando agenda...</div>';
+    try{
+      const r = await chamarApi('listarRevisoes', {});
+      if (!r.ok) throw new Error(r.erro || 'Não foi possível carregar a agenda.');
+      revisoesCache = linhasParaObjetos(r.dados);
+      renderListaRevisoes(revisoesCache);
+    } catch(e){ listaRevisoesEl.innerHTML = '<div class="vazio">Erro: ' + escapar(e.message) + '</div>'; }
+  }
+  async function salvarRevisaoFrontend(){
+    const fileId = campoRevisaoFileId.value.trim();
+    const data = campoRevisaoData.value;
+    if (!fileId || !data){ statusRevisao.textContent = 'Informe o File ID e a data.'; return; }
+    salvarRevisao.disabled = true;
+    statusRevisao.textContent = 'Salvando na planilha...';
+    const revisaoId = campoRevisaoId.value.trim();
+    const payload = { revisaoId: revisaoId, fileId: fileId, dataRevisao: data, periodicidadeDias: campoRevisaoPeriodicidade.value || 0, responsavel: campoRevisaoResponsavel.value, observacoes: campoRevisaoObservacoes.value };
+    try{
+      const r = await chamarApi(revisaoId ? 'atualizarRevisao' : 'criarRevisao', payload);
+      if (!r.ok) throw new Error(r.erro || 'Não foi possível salvar a revisão.');
+      statusRevisao.textContent = 'Agenda salva.';
+      await carregarAgenda();
+      limparFormularioRevisao();
+      formRevisao.classList.remove('mostrar');
+    } catch(e){ statusRevisao.textContent = 'Erro: ' + e.message; }
+    finally { salvarRevisao.disabled = false; }
+  }
+  async function acaoAgenda(acao, revisaoId){
+    const item = revisoesCache.find(x => String(x['ID da Revisão']) === String(revisaoId));
+    if (!item) return;
+    if (acao === 'editar'){ abrirFormularioRevisao(item); return; }
+    if (acao === 'excluir' && !window.confirm('Excluir esta revisão da agenda?')) return;
+    try{
+      const payload = { revisaoId: revisaoId, observacoes: item['Observações'] || '' };
+      const r = await chamarApi(acao === 'concluir' ? 'concluirRevisao' : 'excluirRevisao', payload);
+      if (!r.ok) throw new Error(r.erro || 'Operação não concluída.');
+      await carregarAgenda();
+    } catch(e){ statusRevisao.textContent = 'Erro: ' + e.message; }
+  }
+
   // ---------- assistente de IA ----------
   function abrirIAFlutuante(){
     painelIAFlutuante.classList.add('mostrar');
@@ -1200,6 +1446,13 @@
   btnFecharIAFlutuante.addEventListener('click', fecharIAFlutuante);
   btnLimparContextoIA.addEventListener('click', limparContextoIA);
   conteudo.addEventListener('click', e => {
+    const botaoRevisao = e.target.closest('.btn-agendar-revisao');
+    if (botaoRevisao){
+      e.preventDefault();
+      e.stopPropagation();
+      abrirAgendaParaDocumento(botaoRevisao.dataset.revisaoFileId, botaoRevisao.dataset.revisaoNome);
+      return;
+    }
     const botao = e.target.closest('.btn-apontar-ia');
     if (!botao) return;
     e.preventDefault();
@@ -1208,6 +1461,25 @@
   });
   btnEnviarIA.addEventListener('click', enviarMensagemIA);
   campoChatIA.addEventListener('keydown', e => { if (e.key === 'Enter') enviarMensagemIA(); });
+
+  btnCriarItem.addEventListener('click', () => abrirModalCriacao());
+  fecharModalCriar.addEventListener('click', fecharModalCriacao);
+  confirmarCriacao.addEventListener('click', criarItemFrontend);
+  campoTipoItem.addEventListener('change', () => {
+    const texto = campoTipoItem.value === 'texto' || campoTipoItem.value === 'markdown';
+    campoConteudoItem.parentElement.style.display = texto ? 'block' : 'none';
+    confirmarCriacao.textContent = campoTipoItem.value === 'pasta' ? 'Criar pasta' : 'Criar arquivo';
+  });
+  btnAgenda.addEventListener('click', abrirModalAgenda);
+  fecharModalAgenda.addEventListener('click', fecharAgenda);
+  btnNovaRevisao.addEventListener('click', () => abrirFormularioRevisao());
+  cancelarFormRevisao.addEventListener('click', () => { formRevisao.classList.remove('mostrar'); limparFormularioRevisao(); });
+  salvarRevisao.addEventListener('click', salvarRevisaoFrontend);
+  listaRevisoesEl.addEventListener('click', e => {
+    const botao = e.target.closest('[data-agenda-acao]');
+    if (!botao) return;
+    acaoAgenda(botao.dataset.agendaAcao, botao.dataset.revisaoId);
+  });
 
   btnReprocessar.addEventListener('click', abrirModalReprocessar);
   fecharModalReprocessar.addEventListener('click', fecharModal);
