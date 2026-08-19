@@ -282,7 +282,9 @@
   details.arvore-nivel details.arvore-nivel details.arvore-nivel{ border-left-color:var(--blue); }
   details.arvore-nivel > summary{ list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 14px; font-weight:600; font-size:14px; }
   details.arvore-nivel > summary::-webkit-details-marker{ display:none; }
-  details.arvore-titulo{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .arvore-titulo{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .arvore-resumo-acoes{ display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+  .arvore-resumo-acoes .contagem{ white-space:nowrap; }
   .arvore-titulo > span:last-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .arvore-seta{ display:inline-block; color:var(--accent); font-size:20px; line-height:12px; transform:rotate(0deg); transition:transform .18s ease; }
   details.arvore-nivel[open] > summary .arvore-seta{ transform:rotate(90deg); }
@@ -290,6 +292,27 @@
   .arvore-acesso{ display:inline-block; color:var(--accent); font-family:var(--font-mono); font-size:11px; margin:0 0 9px; text-decoration:none; }
   .arvore-acesso:hover{ text-decoration:underline; }
   .arvore-vazia{ color:var(--muted); font-family:var(--font-mono); font-size:11px; padding:8px 0; }
+  .arvore-documentos{ display:grid; gap:6px; margin:8px 0 12px; }
+  .arvore-documento{ display:flex; align-items:center; gap:9px; min-width:0; padding:9px 10px; border:1px solid rgba(196,151,74,.28); border-radius:8px; background:rgba(8,14,24,.48); color:var(--ink); }
+  .arvore-documento-link{ display:flex; align-items:center; gap:9px; min-width:0; flex:1; color:var(--ink); text-decoration:none; }
+  .arvore-documento:hover{ border-color:var(--accent); background:rgba(196,151,74,.10); }
+  .arvore-documento-icone{ flex:0 0 auto; font-size:16px; }
+  .arvore-documento-info{ min-width:0; flex:1; }
+  .arvore-documento-nome{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:600; }
+  .arvore-documento-meta{ display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .arvore-documento-meta .chip{ font-size:10px; }
+  .arvore-acoes{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+  .btn-apontar-ia{ border:1px solid rgba(196,151,74,.58); background:rgba(196,151,74,.10); color:var(--accent); border-radius:6px; padding:6px 8px; font-family:var(--font-mono); font-size:10px; cursor:pointer; white-space:nowrap; }
+  .btn-apontar-ia:hover{ background:var(--accent); color:var(--accent-ink); }
+  .btn-apontar-ia:active{ transform:scale(.97); }
+  .acoes-cabecalho-ia{ display:flex; align-items:center; gap:6px; }
+  .limpar-contexto-ia{ border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:6px; padding:5px 7px; font-family:var(--font-mono); font-size:10px; cursor:pointer; }
+  .contexto-ia-bar{ padding:7px 12px; background:rgba(196,151,74,.08); border-bottom:1px solid var(--line); color:var(--accent); font-family:var(--font-mono); font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  @media (max-width:520px){
+    .btn-apontar-ia{ padding:8px 7px; }
+    .arvore-documento{ align-items:flex-start; }
+    .arvore-acoes{ padding-top:1px; }
+  }
 
   .vazio{
     text-align:center;
@@ -476,7 +499,7 @@
   <main>
     <div class="barra-info">
       <span id="info-contagem">—</span>
-      <span class="refazer" id="btn-reprocessar">↻ reprocessar</span>
+      <span class="refazer" id="btn-reprocessar">↻ atualizar mapeamento</span>
     </div>
     <div id="conteudo"></div>
   </main>
@@ -485,8 +508,12 @@
   <aside class="painel-ia-flutuante" id="painel-ia-flutuante" aria-label="Assistente de IA">
     <div class="cabecalho-ia-flutuante">
       <strong>Assistente EU+ IA</strong>
-      <button class="fechar-ia" id="fechar-ia-flutuante" aria-label="Fechar assistente">×</button>
+      <div class="acoes-cabecalho-ia">
+        <button class="limpar-contexto-ia" id="limpar-contexto-ia" type="button" title="Limpar documento ou pasta selecionada">limpar contexto</button>
+        <button class="fechar-ia" id="fechar-ia-flutuante" aria-label="Fechar assistente">×</button>
+      </div>
     </div>
+    <div class="contexto-ia-bar" id="contexto-ia-bar">Sem documento ou pasta apontado.</div>
     <div class="chat-mensagens" id="chat-mensagens"></div>
     <div class="chat-input-bar" id="chat-input-bar">
       <input type="text" id="campo-chat-ia" placeholder="Pergunte sobre o conteúdo do Drive..." autocomplete="off" />
@@ -498,10 +525,11 @@
 <!-- ===================== MODAL: REPROCESSAR ===================== -->
 <div class="modal-fundo" id="modal-reprocessar">
   <div class="modal">
-    <h3>Reprocessar mapeamento</h3>
-    <button class="opcao-modulo" data-modulo="pastas">📁 Todas as pastas do Drive</button>
-    <button class="opcao-modulo" data-modulo="projetosProdutos">🧩 Produtos e Projetos</button>
-    <button class="opcao-modulo" data-modulo="documental">📄 Mapeamento Documental</button>
+    <h3>Atualizar mapeamento</h3>
+    <button class="opcao-modulo" data-modulo="tudo">🔄 Atualizar todas as áreas (recomendado)</button>
+    <button class="opcao-modulo" data-modulo="pastas">📁 Central e todas as pastas</button>
+    <button class="opcao-modulo" data-modulo="projetosProdutos">🧩 Projetos e Produtos</button>
+    <button class="opcao-modulo" data-modulo="documental">📄 Biblioteca e documentos</button>
     <div class="status-linha" id="status-reprocessar"></div>
     <div class="fechar-modal" id="fechar-modal-reprocessar">fechar</div>
   </div>
@@ -534,6 +562,7 @@
 
   // estado do chat com a IA
   let historicoChatIA = [];
+  let contextoIA = { fileIds: [], folderIds: [], itens: [] };
   let chatIniciado = false;
   let contadorBolha = 0;
 
@@ -559,6 +588,8 @@
   const btnIAFlutuante = document.getElementById('btn-ia-flutuante');
   const painelIAFlutuante = document.getElementById('painel-ia-flutuante');
   const btnFecharIAFlutuante = document.getElementById('fechar-ia-flutuante');
+  const btnLimparContextoIA = document.getElementById('limpar-contexto-ia');
+  const contextoIAEl = document.getElementById('contexto-ia-bar');
 
   // ---------- helpers ----------
   function normalizar(txt){
@@ -608,12 +639,49 @@
     return dados;
   }
 
-  function chamarApi(action, payload){
-    return chamarEndpoint(APP_URL, action, estado.token, payload);
+  let renovandoSessao = null;
+
+  async function renovarSessao(){
+    if (renovandoSessao) return renovandoSessao;
+    const senha = window.prompt('Sua sessão expirou. Digite a senha para continuar:');
+    if (!senha) throw new Error('Sessão expirada. Faça login novamente.');
+    renovandoSessao = (async () => {
+      const r = await chamarEndpoint(APP_URL, 'login', '', { senha });
+      if (!r.ok) throw new Error(r.erro || 'Não foi possível renovar a sessão.');
+      estado.token = r.token;
+      estado.tokenExp = Date.now() + (5.5 * 60 * 60 * 1000);
+      localStorage.setItem(LS_TOKEN, estado.token);
+      localStorage.setItem(LS_TOKEN_EXP, String(estado.tokenExp));
+      try {
+        const ria = await chamarEndpoint(IA_APP_URL, 'login', '', { senha });
+        if (ria.ok){
+          estado.iaToken = ria.token;
+          estado.iaTokenExp = Date.now() + (5.5 * 60 * 60 * 1000);
+          localStorage.setItem(LS_IA_TOKEN, estado.iaToken);
+          localStorage.setItem(LS_IA_TOKEN_EXP, String(estado.iaTokenExp));
+        }
+      } catch(e){ console.warn('Não foi possível renovar a sessão da IA:', e.message); }
+      return r;
+    })().finally(() => { renovandoSessao = null; });
+    return renovandoSessao;
   }
 
-  function chamarIA(action, payload){
-    return chamarEndpoint(IA_APP_URL, action, estado.iaToken, payload);
+  async function chamarApi(action, payload){
+    let resposta = await chamarEndpoint(APP_URL, action, estado.token, payload);
+    if (resposta && resposta.ok === false && /sessão expirada/i.test(resposta.erro || '')) {
+      await renovarSessao();
+      resposta = await chamarEndpoint(APP_URL, action, estado.token, payload);
+    }
+    return resposta;
+  }
+
+  async function chamarIA(action, payload){
+    let resposta = await chamarEndpoint(IA_APP_URL, action, estado.iaToken, payload);
+    if (resposta && resposta.ok === false && /sessão expirada/i.test(resposta.erro || '')) {
+      await renovarSessao();
+      resposta = await chamarEndpoint(IA_APP_URL, action, estado.iaToken, payload);
+    }
+    return resposta;
   }
 
   function linhasParaObjetos(dados){
@@ -752,12 +820,56 @@
     conteudo.innerHTML = renderNosPastas(arvore, 0);
   }
 
+  function arquivosDoItem(item){
+    const bruto = item && (item['Arquivos'] || item['Files'] || item['arquivos']);
+    if (!bruto) return [];
+    if (Array.isArray(bruto)) return bruto;
+    try {
+      const lido = JSON.parse(String(bruto));
+      return Array.isArray(lido) ? lido : [];
+    } catch(e){ return []; }
+  }
+
+  function iconeDocumento(mime){
+    const tipo = normalizar(mime || '');
+    if (tipo.indexOf('spreadsheet') !== -1 || tipo.indexOf('excel') !== -1) return '📊';
+    if (tipo.indexOf('document') !== -1 || tipo.indexOf('word') !== -1) return '📄';
+    if (tipo.indexOf('presentation') !== -1 || tipo.indexOf('powerpoint') !== -1) return '📽️';
+    if (tipo.indexOf('pdf') !== -1) return '📕';
+    if (tipo.indexOf('script') !== -1 || tipo.indexOf('javascript') !== -1) return '🧩';
+    return '📎';
+  }
+
+  function documentoId(doc){ return doc && (doc.id || doc.fileId || doc['ID'] || doc['File ID'] || ''); }
+  function documentoNome(doc){ return (doc && (doc.name || doc['Nome'] || 'Documento sem nome')); }
+  function documentoUrl(doc){ return (doc && (doc.url || doc['URL'] || '#')); }
+  function documentoTipo(doc){ return (doc && (doc.mimeType || doc['Tipo'] || doc['MIME Type'] || 'arquivo')); }
+  function documentoData(doc){ return (doc && (doc.lastUpdated || doc['Última Modificação'] || '')); }
+  function botaoApontarIA(tipo, id, nome){
+    if (!id) return '';
+    return '<button type="button" class="btn-apontar-ia" data-ia-tipo="' + escapar(tipo) + '" data-ia-id="' + escapar(id) + '" data-ia-nome="' + escapar(nome || '') + '" title="Enviar este item para a IA">✦ IA</button>';
+  }
+  function renderDocumentosDaPasta(documentos){
+    if (!documentos || !documentos.length) return '';
+    return '<div class="arvore-documentos" aria-label="Documentos desta pasta">' + documentos.map(doc => `
+      <div class="arvore-documento">
+        <a class="arvore-documento-link" href="${documentoUrl(doc)}" target="_blank" rel="noopener">
+          <span class="arvore-documento-icone">${iconeDocumento(documentoTipo(doc))}</span>
+          <span class="arvore-documento-info">
+            <span class="arvore-documento-nome">${escapar(documentoNome(doc))}</span>
+            <span class="arvore-documento-meta"><span class="chip">${escapar(documentoTipo(doc))}</span>${documentoData(doc) ? '<span class="chip">'+escapar(documentoData(doc))+'</span>' : ''}</span>
+          </span>
+        </a>
+        <span class="arvore-acoes">${botaoApontarIA('documento', documentoId(doc), documentoNome(doc))}</span>
+      </div>`).join('') + '</div>';
+  }
+
   function construirArvorePastas(lista){
     const porId = {};
     const raizes = [];
     lista.forEach((item, index) => {
       const id = item['ID'] || item['ID da Pasta'] || item['Folder ID'] || item['id'] || ('linha-' + index);
-      porId[id] = { item, id, filhos: [] };
+      porId[id] = { item, id, filhos: [], documentos: arquivosDoItem(item) };
     });
     Object.values(porId).forEach(node => {
       const item = node.item;
@@ -777,17 +889,20 @@
     return nodes.map(node => {
       const p = node.item;
       const nome = p['Nome'] || 'Pasta sem nome';
-      const filhos = node.filhos.length ? renderNosPastas(node.filhos, nivel + 1) : '<div class="arvore-vazia">Nenhuma subpasta neste nível.</div>';
+      const documentos = renderDocumentosDaPasta(node.documentos);
+      const filhos = node.filhos.length ? renderNosPastas(node.filhos, nivel + 1) : '';
+      const total = node.filhos.length + node.documentos.length;
+      const vazio = total ? '' : '<div class="arvore-vazia">Nenhum documento ou subpasta neste nível.</div>';
       const aberto = nivel === 0 ? ' open' : '';
       return `
         <details class="arvore-nivel"${aberto}>
           <summary>
             <span class="arvore-titulo"><span class="arvore-seta">›</span><span>📁</span>${escapar(nome)}</span>
-            <span class="contagem">${node.filhos.length} ${node.filhos.length === 1 ? 'item' : 'itens'}</span>
+            <span class="arvore-resumo-acoes">${botaoApontarIA('pasta', p['ID'] || p['ID da Pasta'] || '', nome)}<span class="contagem">${total} ${total === 1 ? 'item' : 'itens'}</span></span>
           </summary>
           <div class="arvore-conteudo">
             <a class="arvore-acesso" href="${p['URL'] || '#'}" target="_blank" rel="noopener">Abrir esta pasta no Drive ↗</a>
-            ${filhos}
+            ${documentos}${filhos}${vazio}
           </div>
         </details>`;
     }).join('');
@@ -800,8 +915,15 @@
     conteudo.innerHTML = renderNosArea(arvore, 0, tipo);
   }
 
+  const IDS_AREAS = {
+    'Central': '1UtaFesyapHJNfbwepHIiyc24JxvW8sOu',
+    'Projetos': '1Y2C_uo8FTmoZLjlQ334ItARmAlNWILBM',
+    'Produtos': '1AnxVudPSWc6fTWC5i_SP7l06OtSgjKOI',
+    'Biblioteca': '10eqbDhv6axJftLlnpI4ASiUsy_nzOj3n'
+  };
+
   function construirArvoreArea(lista, nomeArea, tipo){
-    const raiz = { nome: nomeArea, url: '', filhos: [], documentos: [] };
+    const raiz = { nome: nomeArea, id: IDS_AREAS[nomeArea] || '', url: '', filhos: [], documentos: [] };
     const porCaminho = { '': raiz };
     lista.forEach((item, index) => {
       let caminho = String(item['Caminho Completo'] || item['Pasta (Nome)'] || '').trim();
@@ -814,7 +936,9 @@
         const pastaPartes = partes.length ? partes : (pastaNome && normalizar(pastaNome) !== normalizar(nomeArea) ? [pastaNome] : []);
         pastaPartes.forEach(parte => {
           acumulado += '/' + parte;
-          if (!porCaminho[acumulado]) porCaminho[acumulado] = { nome: parte, url: '', filhos: [], documentos: [] };
+          if (!porCaminho[acumulado]) porCaminho[acumulado] = { nome: parte, id: item['Pasta ID'] || '', url: item['Pasta URL'] || '', filhos: [], documentos: [] };
+          if (!porCaminho[acumulado].id && item['Pasta ID']) porCaminho[acumulado].id = item['Pasta ID'];
+          if (!porCaminho[acumulado].url && item['Pasta URL']) porCaminho[acumulado].url = item['Pasta URL'];
           if (atual.filhos.indexOf(porCaminho[acumulado]) === -1) atual.filhos.push(porCaminho[acumulado]);
           atual = porCaminho[acumulado];
         });
@@ -822,17 +946,19 @@
       } else {
         partes.forEach(parte => {
           acumulado += '/' + parte;
-          if (!porCaminho[acumulado]) porCaminho[acumulado] = { nome: parte, url: '', filhos: [], documentos: [], item: null };
+          if (!porCaminho[acumulado]) porCaminho[acumulado] = { nome: parte, id: '', url: '', filhos: [], documentos: [], item: null };
           if (atual.filhos.indexOf(porCaminho[acumulado]) === -1) atual.filhos.push(porCaminho[acumulado]);
           atual = porCaminho[acumulado];
         });
         atual.item = item;
-        atual.url = item['URL'] || '';
+        atual.id = item['ID'] || atual.id || '';
+        atual.url = item['URL'] || atual.url || '';
+        atual.documentos = (atual.documentos || []).concat(arquivosDoItem(item));
       }
     });
     const ordenar = node => {
       node.filhos.sort((a,b) => normalizar(a.nome).localeCompare(normalizar(b.nome), 'pt-BR'));
-      node.documentos.sort((a,b) => normalizar(a['Nome']).localeCompare(normalizar(b['Nome']), 'pt-BR'));
+      node.documentos.sort((a,b) => normalizar(documentoNome(a)).localeCompare(normalizar(documentoNome(b)), 'pt-BR'));
       node.filhos.forEach(ordenar);
       return node;
     };
@@ -842,17 +968,13 @@
   function renderNosArea(node, nivel, tipo){
     const total = node.filhos.length + node.documentos.length;
     const aberto = nivel === 0 ? ' open' : '';
-    const conteudoDocs = node.documentos.map(doc => `
-      <a class="cartao cor-doc" href="${doc['URL'] || '#'}" target="_blank" rel="noopener">
-        <div class="titulo">${escapar(doc['Nome'])}</div>
-        <div class="caminho">${escapar(doc['Caminho Completo'] || doc['Pasta (Nome)'])}</div>
-        <div class="chips"><span class="chip">${escapar(doc['Tipo'])}</span><span class="chip">${escapar(doc['Última Modificação'])}</span></div>
-      </a>`).join('');
+    const conteudoDocs = renderDocumentosDaPasta(node.documentos);
     const filhos = node.filhos.map(filho => renderNosArea(filho, nivel + 1, tipo)).join('');
     const acesso = node.url ? '<a class="arvore-acesso" href="' + node.url + '" target="_blank" rel="noopener">Abrir esta pasta no Drive ↗</a>' : '';
+    const apontar = node.id ? botaoApontarIA('pasta', node.id, node.nome) : '';
     return `
       <details class="arvore-nivel"${aberto}>
-        <summary><span class="arvore-titulo"><span class="arvore-seta">›</span><span>📁</span>${escapar(node.nome)}</span><span class="contagem">${total} ${total === 1 ? 'item' : 'itens'}</span></summary>
+        <summary><span class="arvore-titulo"><span class="arvore-seta">›</span><span>📁</span>${escapar(node.nome)}</span><span class="arvore-resumo-acoes">${apontar}<span class="contagem">${total} ${total === 1 ? 'item' : 'itens'}</span></span></summary>
         <div class="arvore-conteudo">${acesso}${conteudoDocs}${filhos || (!conteudoDocs ? '<div class="arvore-vazia">Nenhum item neste nível.</div>' : '')}</div>
       </details>`;
   }
@@ -941,6 +1063,36 @@
     painelIAFlutuante.classList.remove('mostrar');
   }
 
+  function atualizarBarraContextoIA(){
+    if (!contextoIA.itens.length){
+      contextoIAEl.textContent = 'Sem documento ou pasta apontado.';
+      return;
+    }
+    const item = contextoIA.itens[0];
+    const total = contextoIA.itens.length > 1 ? ' +' + (contextoIA.itens.length - 1) : '';
+    contextoIAEl.textContent = 'Contexto ativo: ' + (item.tipo === 'pasta' ? 'pasta' : 'documento') + ' — ' + item.nome + total;
+  }
+
+  function apontarParaIA(tipo, id, nome){
+    if (!id) return;
+    contextoIA = {
+      fileIds: tipo === 'documento' ? [id] : [],
+      folderIds: tipo === 'pasta' ? [id] : [],
+      itens: [{ tipo: tipo, id: id, nome: nome || 'item selecionado' }]
+    };
+    atualizarBarraContextoIA();
+    abrirIAFlutuante();
+    adicionarBolha('ia', 'Contexto apontado: ' + (tipo === 'pasta' ? 'pasta' : 'documento') + ' “' + (nome || 'sem nome') + '”. Agora posso usar este item na próxima pergunta.');
+    campoChatIA.value = tipo === 'pasta' ? 'Quais documentos existem nesta pasta e o que há de mais importante neles?' : 'Analise este documento e destaque resumo, decisões, riscos, pendências e aprendizados.';
+    campoChatIA.focus();
+  }
+
+  function limparContextoIA(){
+    contextoIA = { fileIds: [], folderIds: [], itens: [] };
+    atualizarBarraContextoIA();
+    adicionarBolha('ia', 'Contexto limpo. A próxima pergunta usará a busca geral nas áreas autorizadas.');
+  }
+
   function adicionarBolha(papel, texto, carregando){
     contadorBolha++;
     const id = 'bolha-' + contadorBolha;
@@ -968,7 +1120,12 @@
 
     const idCarregando = adicionarBolha('ia', 'digitando...', true);
     try{
-      const r = await chamarIA('perguntarIA', { pergunta: texto, historico: historicoChatIA.slice(-10) });
+      const r = await chamarIA('perguntarIA', {
+        pergunta: texto,
+        historico: historicoChatIA.slice(-10),
+        fileIds: contextoIA.fileIds,
+        folderIds: contextoIA.folderIds
+      });
       removerBolha(idCarregando);
       if (r.ok){
         adicionarBolha('ia', r.resposta);
@@ -1014,8 +1171,11 @@
         statusReprocessar.textContent = 'Status: ' + r.status + ' · mapeados: ' + r.total + ' · na fila: ' + r.restante;
         if (r.status === 'concluído'){
           clearInterval(poller);
-          const chaveCache = modulo === 'pastas' ? 'pastas' : (modulo === 'projetosProdutos' ? 'pp' : 'doc');
-          cache[chaveCache] = null; // força recarregar na próxima vez que abrir a aba
+          if (modulo === 'tudo') cache = { pastas: null, pp: null, doc: null };
+          else {
+            const chaveCache = modulo === 'pastas' ? 'pastas' : (modulo === 'projetosProdutos' ? 'pp' : 'doc');
+            cache[chaveCache] = null;
+          } // força recarregar na próxima vez que abrir a aba
         }
       } catch(e){ /* silencioso, tenta de novo no próximo ciclo */ }
     }, 4000);
@@ -1038,6 +1198,14 @@
 
   btnIAFlutuante.addEventListener('click', abrirIAFlutuante);
   btnFecharIAFlutuante.addEventListener('click', fecharIAFlutuante);
+  btnLimparContextoIA.addEventListener('click', limparContextoIA);
+  conteudo.addEventListener('click', e => {
+    const botao = e.target.closest('.btn-apontar-ia');
+    if (!botao) return;
+    e.preventDefault();
+    e.stopPropagation();
+    apontarParaIA(botao.dataset.iaTipo, botao.dataset.iaId, botao.dataset.iaNome);
+  });
   btnEnviarIA.addEventListener('click', enviarMensagemIA);
   campoChatIA.addEventListener('keydown', e => { if (e.key === 'Enter') enviarMensagemIA(); });
 
@@ -1048,6 +1216,7 @@
   });
 
   // ---------- inicialização ----------
+  atualizarBarraContextoIA();
   if (sessaoValida()){
     abrirApp();
   }
