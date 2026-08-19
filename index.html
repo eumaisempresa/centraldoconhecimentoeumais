@@ -1209,7 +1209,7 @@
       setTimeout(() => { fecharModalCriacao(); carregarAba(abaAtual, true); }, 600);
     } catch(e){
       statusCriarItem.textContent = e.message.indexOf('PERMISSAO_DRIVE_ESCRITA') >= 0
-        ? 'A implantação ainda não recebeu escrita no Drive. Autorize o escopo Drive, salve o Apps Script e faça novo redeploy como proprietário.'
+        ? 'A implantação ainda não recebeu escrita no Drive. No Apps Script, execute autorizarDriveEscrita, conceda a permissão, salve e publique uma Nova versão como proprietário.'
         : 'Erro: ' + e.message;
     }
     finally { confirmarCriacao.disabled = false; }
@@ -1299,7 +1299,7 @@
       formRevisao.classList.remove('mostrar');
     } catch(e){
       statusRevisao.textContent = /Invalid file or folder ID|planilha base|e-mail/i.test(e.message)
-        ? 'Planilha base inválida. Use o ID 144Mx5rTEwmUz02AUZNLNQL_tpjOT0MWNKYCvDUaUzc0 nas Propriedades do Script, em SPREADSHEET_ID.'
+        ? 'Planilha base inválida. Use apenas o ID 144Mx5rTEwmUz02AUZNLNQL_tpjOT0MWNKYCvDUaUzc0 em SPREADSHEET_ID; não use e-mail.'
         : 'Erro: ' + e.message;
     }
     finally { salvarRevisao.disabled = false; }
